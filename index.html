@@ -164,6 +164,7 @@
       align-items: center;
       justify-content: center;
       opacity: 0;
+      pointer-events: none;
     }
 
     #closeup-svg {
@@ -346,14 +347,128 @@
         0 0 30px rgba(231, 76, 60, 0.8),
         0 0 60px rgba(231, 76, 60, 0.4);
     }
+
+    /* ============ ROLE MENU SCREEN ============ */
+    #menu-screen {
+      width: 100%;
+      max-width: 360px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 30px 20px;
+      background: #081208;
+      border: 3px solid #2ecc71;
+      box-shadow: 0 0 20px rgba(46, 204, 113, 0.25);
+      margin-top: 30px;
+      position: relative;
+    }
+
+    .menu-title {
+      font-size: 16px;
+      color: #f0e040;
+      letter-spacing: 3px;
+      text-shadow: 3px 3px 0 #806000, 0 0 10px rgba(240, 224, 64, 0.3);
+      text-align: center;
+      margin-bottom: 5px;
+      line-height: 1.5;
+    }
+
+    .menu-subtitle {
+      font-size: 7px;
+      color: #2ecc71;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      text-align: center;
+      text-transform: uppercase;
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    .menu-btn {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px;
+      width: 100%;
+      padding: 16px 10px;
+      background: #110000;
+      border: 3px solid #f0e040;
+      color: #f0e040;
+      box-shadow: 4px 4px 0 #806000;
+      cursor: pointer;
+      letter-spacing: 2px;
+      text-align: center;
+      position: relative;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+
+    .menu-btn:not(.disabled):hover {
+      background: #2a0000;
+      border-color: #fff;
+      color: #fff;
+      box-shadow: 4px 4px 0 #b38f00;
+    }
+
+    .menu-btn:not(.disabled):active {
+      transform: translate(3px, 3px);
+      box-shadow: 1px 1px 0 #806000;
+    }
+
+    .menu-btn.disabled {
+      background: #1a1a1a;
+      border: 3px solid #555;
+      color: #777;
+      box-shadow: 4px 4px 0 #222;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .menu-btn.disabled::after {
+      content: 'LOCKED';
+      font-size: 6px;
+      color: #e74c3c;
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 1px solid #e74c3c;
+      padding: 2px 4px;
+      border-radius: 2px;
+      letter-spacing: 1px;
+    }
+
+    /* ============ GAMEPLAY SCREEN ============ */
+    #game-screen {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
   </style>
 </head>
 
 <body>
 
-  <div class="title">SCENARIO 001</div>
+  <!-- ============ ROLE MENU SCREEN ============ -->
+  <div id="menu-screen">
+    <div class="menu-title">BATTERPLAY</div>
+    <div class="menu-subtitle">SELECT YOUR ROLE</div>
+    <button class="menu-btn" onclick="selectRole('hitter')">⚾ HITTER</button>
+    <button class="menu-btn disabled" disabled>🏃 BASES</button>
+    <button class="menu-btn disabled" disabled>🥎 PITCHER</button>
+    <button class="menu-btn disabled" disabled>🧤 CATCHER</button>
+  </div>
 
-  <div class="field-wrap">
+  <!-- ============ GAMEPLAY SCREEN ============ -->
+  <div id="game-screen" style="display: none;">
+    <div class="title">SCENARIO 001</div>
+
+    <div class="field-wrap">
     <svg id="field-svg" viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg">
       <!-- OUTFIELD GRASS -->
       <rect x="0" y="0" width="320" height="300" fill="#1a7a30" />
@@ -500,6 +615,7 @@
   <div class="pitch-btn-wrap">
     <button class="pitch-btn" id="pitch-btn" onclick="triggerPitch()">⚾ THROW PITCH!</button>
   </div>
+</div>
 
   <!-- ====== CINEMATIC CLOSE-UP LAYER ====== -->
   <div id="bar-top"></div>
@@ -699,6 +815,155 @@
   </div>
 
   <script>
+    // ============================================================
+    // WEB AUDIO API SOUND GENERATOR
+    // ============================================================
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playSelectSound() {
+      initAudio();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(600, now);
+      osc.frequency.setValueAtTime(900, now + 0.08);
+      
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.18);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.start();
+      osc.stop(now + 0.18);
+    }
+
+    function playBatCrack() {
+      initAudio();
+      const now = audioCtx.currentTime;
+      
+      // Short impulse noise for the impact "tock"
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+      
+      gain.gain.setValueAtTime(0.4, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.start();
+      osc.stop(now + 0.08);
+      
+      // Short filtered noise burst for the "thwack" texture
+      const bufferSize = audioCtx.sampleRate * 0.05;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+      
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
+      
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 1100;
+      filter.Q.value = 1.8;
+      
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.setValueAtTime(0.35, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      
+      noise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(audioCtx.destination);
+      
+      noise.start();
+      noise.stop(now + 0.05);
+    }
+
+    function playCrowdCheer(duration, maxVolume = 0.25) {
+      initAudio();
+      const bufferSize = audioCtx.sampleRate * duration;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      
+      // White noise generator
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      
+      const source = audioCtx.createBufferSource();
+      source.buffer = buffer;
+      
+      // Filter 1 - Human voice range/cheering
+      const filter1 = audioCtx.createBiquadFilter();
+      filter1.type = 'bandpass';
+      filter1.frequency.value = 950;
+      filter1.Q.value = 1.3;
+
+      // Filter 2 - High frequency cheers/whistling tones
+      const filter2 = audioCtx.createBiquadFilter();
+      filter2.type = 'bandpass';
+      filter2.frequency.value = 1750;
+      filter2.Q.value = 1.6;
+      
+      const gainNode = audioCtx.createGain();
+      const now = audioCtx.currentTime;
+      
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(maxVolume, now + 0.35); // rise
+      gainNode.gain.linearRampToValueAtTime(maxVolume * 0.75, now + 1.2); // sustain slightly lower
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration); // fade
+      
+      // Modulate frequencies to simulate wave of cheering
+      filter1.frequency.setValueAtTime(850, now);
+      filter1.frequency.exponentialRampToValueAtTime(1300, now + 0.4);
+      filter1.frequency.linearRampToValueAtTime(950, now + duration);
+
+      filter2.frequency.setValueAtTime(1550, now);
+      filter2.frequency.exponentialRampToValueAtTime(2100, now + 0.45);
+      filter2.frequency.linearRampToValueAtTime(1650, now + duration);
+
+      source.connect(filter1);
+      filter1.connect(gainNode);
+      
+      source.connect(filter2);
+      filter2.connect(gainNode);
+      
+      gainNode.connect(audioCtx.destination);
+      
+      source.start();
+      source.stop(now + duration);
+    }
+
+    // ============================================================
+    // MENU ROLE SELECTION
+    // ============================================================
+    function selectRole(role) {
+      if (role !== 'hitter') return;
+      playSelectSound();
+      document.getElementById('menu-screen').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'flex';
+      
+      // Re-position closeup if screen was resized
+      positionCloseupPanel();
+    }
+
     const BATTER_HOME = { x: 148, y: 258 };
     const BASE_POS = {
       home: { x: 148, y: 258 },
@@ -712,6 +977,7 @@
     let currentBase = 'home';
     let runRaf = null;
     let isAnimating = false;
+    let isPlayAgain = false;
 
     const playerG = document.getElementById('player');
     const pitcherG = document.getElementById('pitcher');
@@ -846,25 +1112,44 @@
       // 3. SLOW-MO LABEL
       slowmoLabel.style.opacity = '1';
 
-      // 4. SLOW-MO SWING + ball arc up (pop-fly)
+      // 4. SLOW-MO SWING - Phase 1: Ball travels INTO the bat (~300ms)
       cuBall.setAttribute('opacity', '1');
-      cuBall.setAttribute('transform', 'translate(-55,-72)');
+      cuBall.setAttribute('transform', 'translate(260, 40)');
 
-      await animate(900, t => {
-        const e = easeInOut(t);
-        const batAngle = e * 60;
+      await animate(300, t => {
+        const e = t; // linear progression for incoming pitch
+        const batAngle = e * 20;
         cuBatGroup.setAttribute('transform', `rotate(${batAngle}, -38, -60)`);
-        const bodyRotate = e * 18;
+        const bodyRotate = e * 6;
         cuBatter.setAttribute('transform', `translate(130,158) rotate(${bodyRotate}, 0, -80)`);
-        // Ball arcs upward (pop-fly)
-        const bx = lerp(-55, 160, e);
-        const by = lerp(-72, -180, e) - Math.sin(e * Math.PI) * 60;
+        
+        // Ball travels from pitcher direction to contact point (80, 88)
+        const bx = lerp(260, 80, e);
+        const by = lerp(40, 88, e);
         cuBall.setAttribute('transform', `translate(${bx},${by})`);
       });
 
-      // 5. IMPACT starburst
+      // 5. IMPACT starburst (coincides with contact at start of Phase 2)
       cuImpact.setAttribute('opacity', '1');
       cuImpact.setAttribute('transform', 'translate(130,158)');
+
+      // Play audio feedback
+      playBatCrack();
+      playCrowdCheer(2.5, 0.22);
+
+      // Phase 2: Ball ricochets off bat in slow-mo pop-fly arc upward (~600ms)
+      await animate(600, t => {
+        const e = easeInOut(t);
+        const batAngle = 20 + e * 40;
+        cuBatGroup.setAttribute('transform', `rotate(${batAngle}, -38, -60)`);
+        const bodyRotate = 6 + e * 12;
+        cuBatter.setAttribute('transform', `translate(130,158) rotate(${bodyRotate}, 0, -80)`);
+        
+        // Ball arcs upward-left (pop-fly) from contact point (80, 88) to off-screen (-30, -20)
+        const bx = lerp(80, -30, e);
+        const by = lerp(88, -20, e) - Math.sin(e * Math.PI) * 50;
+        cuBall.setAttribute('transform', `translate(${bx},${by})`);
+      });
 
       // 6. CRACK! TEXT POPS IN
       crackText.style.opacity = '1';
@@ -924,10 +1209,40 @@
     }
 
     // ============================================================
+    // RESET GAME STATE
+    // ============================================================
+    function resetGame() {
+      isPlayAgain = false;
+      pitchBtn.innerHTML = '⚾ THROW PITCH!';
+      
+      if (currentBase !== 'home') {
+        // Dust at 1B
+        spawnDust(BASE_POS['1b'].x, BASE_POS['1b'].y, 8);
+        cur = { ...BATTER_HOME };
+        playerG.setAttribute('transform', `translate(${cur.x},${cur.y})`);
+        currentBase = 'home';
+        clearHighlights();
+        // Dust at home
+        spawnDust(BATTER_HOME.x, BATTER_HOME.y, 8);
+      }
+      
+      pitcherArm.setAttribute('transform', '');
+      pitcherG.setAttribute('transform', 'translate(160,152)');
+      pitcherBallHand.setAttribute('opacity', '1');
+      batGroup.setAttribute('transform', '');
+      ballG.setAttribute('opacity', '0');
+      popflyBall.setAttribute('opacity', '0');
+    }
+
+    // ============================================================
     // PITCH SEQUENCE
     // ============================================================
     async function triggerPitch() {
       if (isAnimating) return;
+      if (isPlayAgain) {
+        resetGame();
+        return;
+      }
       isAnimating = true;
       setDisabled(true);
 
@@ -1011,6 +1326,7 @@
 
       if (choice === 2) {
         // ✅ CORRECT — run to 1st!
+        playCrowdCheer(4.0, 0.35);
         await showResult(true);
         popflyBall.setAttribute('opacity', '0');
         await runToBase('1b', true);
@@ -1021,6 +1337,8 @@
       }
 
       isAnimating = false;
+      isPlayAgain = true;
+      pitchBtn.innerHTML = '🔄 PLAY AGAIN';
       setDisabled(false);
     }
 
