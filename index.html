@@ -432,12 +432,40 @@
       letter-spacing: 1px;
     }
 
-    /* ============ GAMEPLAY SCREEN ============ */
     #game-screen {
       width: 100%;
+      max-width: 360px;
       display: flex;
       flex-direction: column;
       align-items: center;
+    }
+
+    @keyframes you-glow-pulse {
+      0%, 100% {
+        opacity: 0.35;
+        stroke: #f0e040;
+        filter: drop-shadow(0 0 1px rgba(240, 224, 64, 0.4));
+      }
+      50% {
+        opacity: 1;
+        stroke: #ffffff;
+        filter: drop-shadow(0 0 6px rgba(240, 224, 64, 0.8));
+      }
+    }
+    @keyframes you-text-bob {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-4px);
+      }
+    }
+    #fielder-3b-you-glow {
+      animation: you-glow-pulse 1.4s infinite ease-in-out;
+    }
+    #fielder-3b-you-text {
+      animation: you-text-bob 1.4s infinite ease-in-out;
+      transform-origin: 0px -66px;
     }
   </style>
 </head>
@@ -448,7 +476,7 @@
   <div id="menu-screen">
     <div class="menu-title">BATTERPLAY</div>
     <div class="menu-subtitle">SELECT YOUR ROLE</div>
-    <button class="menu-btn" onclick="selectRole('hitter')">⚾ HITTER</button>
+    <button class="menu-btn" onclick="selectRole('3rd_base')">🧤 3RD BASE</button>
     <button class="menu-btn disabled" disabled>🏃 BASES</button>
     <button class="menu-btn disabled" disabled>🥎 PITCHER</button>
     <button class="menu-btn disabled" disabled>🧤 CATCHER</button>
@@ -456,6 +484,7 @@
 
   <!-- ============ GAMEPLAY SCREEN ============ -->
   <div id="game-screen" style="display: none;">
+    <button id="back-to-menu-btn" onclick="goBackToMenu()" style="align-self: flex-start; background: none; border: none; color: #2ecc71; font-family: 'Press Start 2P', monospace; font-size: 8px; cursor: pointer; margin-bottom: 14px; padding: 4px 0; display: flex; align-items: center; gap: 4px; outline: none; -webkit-tap-highlight-color: transparent;">⬅️ BACK TO MENU</button>
     <div class="title">SCENARIO 001</div>
 
     <div class="status-bar">
@@ -688,6 +717,7 @@
 
       <!-- 3rd Baseman -->
       <g id="fielder-3b" transform="translate(78,172) scale(0.75)">
+        <ellipse id="fielder-3b-you-glow" cx="0" cy="2" rx="15" ry="5.5" fill="none" stroke="#f0e040" stroke-width="1.8" opacity="0" pointer-events="none" />
         <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
         <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
         <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
@@ -717,6 +747,7 @@
         <rect x="-7" y="-55" width="14" height="13" rx="2" fill="#e67e22" />
         <rect x="-2" y="-57" width="4" height="3" rx="1" fill="#e67e22" />
         <rect x="-3" y="-52" width="6" height="7" rx="1" fill="#ffffff" />
+        <text id="fielder-3b-you-text" x="0" y="-68" font-family="'Press Start 2P', monospace" font-size="7.5" font-weight="bold" fill="#f0e040" text-anchor="middle" opacity="0" stroke="#000" stroke-width="1.5" paint-order="stroke fill">YOU</text>
       </g>
       <!-- BATTER -->
       <g id="player" transform="translate(148,258) scale(0.75)">
@@ -992,7 +1023,7 @@
     // ============================================================
     // SCENARIOS DATA
     // ============================================================
-    const SCENARIOS = [
+    const HITTER_SCENARIOS = [
       {
         id: 1,
         title: "SCENARIO 001",
@@ -1085,6 +1116,56 @@
       }
     ];
 
+    const THIRD_BASE_SCENARIOS = [
+      {
+        id: 101,
+        title: "SCENARIO 001",
+        situation: "Pop-up caught, Runner on 2nd",
+        details: "You are the 3rd baseman. There is a runner on 2nd base. The hitter hits a pop-up fly in your direction, and you catch it in the air. The runner on 2nd base is off base running towards 3rd.",
+        question: "What should you do to get the runner out?",
+        choices: [
+          "Touch 3rd base",
+          "Tag the runner",
+          "Throw to Home plate"
+        ],
+        correctIndex: 1,
+        why: "Why: Since the runner is not forced to advance, they can go back to 2nd. Touching 3rd base does not record an out; you must tag them.",
+        runners: ['2b']
+      },
+      {
+        id: 102,
+        title: "SCENARIO 002",
+        situation: "Ground Ball, Runner on 2nd",
+        details: "You are the 3rd baseman. There is a runner on 2nd base. Hitter hits a ground ball to you. The runner on 2nd base runs towards 3rd.",
+        question: "What should you do to get the runner out?",
+        choices: [
+          "Touch 3rd base",
+          "Tag the runner",
+          "Throw to Home plate"
+        ],
+        correctIndex: 1,
+        why: "Why: Since there is no runner on 1st, the runner is not forced to advance. Touching 3rd base does nothing; you must tag the runner.",
+        runners: ['2b']
+      },
+      {
+        id: 103,
+        title: "SCENARIO 003",
+        situation: "Ground Ball, Runners on 1st & 2nd",
+        details: "You are the 3rd baseman. There are runners on 1st and 2nd base. Hitter hits a ground ball to you.",
+        question: "What is the best way to get the lead runner out?",
+        choices: [
+          "Touch 3rd base",
+          "Tag the runner",
+          "Throw to Home plate"
+        ],
+        correctIndex: 0,
+        why: "Why: With runners on 1st and 2nd, the runner on 2nd is forced to run. Touching 3rd base records an easy force out.",
+        runners: ['1b', '2b']
+      }
+    ];
+
+    let currentRole = 'hitter';
+    let activeScenarios = HITTER_SCENARIOS;
     let currentScenarioIndex = 0;
 
     // ============================================================
@@ -1223,6 +1304,46 @@
       source.stop(now + duration);
     }
 
+    function playGloveCatch() {
+      initAudio();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(60, now + 0.08);
+      
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.start();
+      osc.stop(now + 0.08);
+    }
+
+    function playTagSound() {
+      initAudio();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(400, now);
+      osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+      
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.1);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.start();
+      osc.stop(now + 0.1);
+    }
+
     // ============================================================
     // MENU ROLE SELECTION
     // ============================================================
@@ -1256,7 +1377,7 @@
         if (el) el.setAttribute('opacity', '0');
       });
       
-      const scenario = SCENARIOS[currentScenarioIndex];
+      const scenario = activeScenarios[currentScenarioIndex];
       scenario.runners.forEach(base => {
         let el = document.getElementById('runner-' + base);
         if (el) {
@@ -1269,31 +1390,61 @@
     }
 
     function setupScenario() {
-      const scenario = SCENARIOS[currentScenarioIndex];
+      const scenario = activeScenarios[currentScenarioIndex];
       document.querySelector('.title').textContent = `${scenario.title}: ${scenario.situation.toUpperCase()}`;
       setStatus(scenario.details);
       
       setupBaseRunners();
       
-      document.getElementById('pitch-btn').style.display = 'block';
-      document.getElementById('pitch-btn').innerHTML = '⚾ THROW PITCH!';
-      document.getElementById('pitch-btn').disabled = false;
+      const pitchBtn = document.getElementById('pitch-btn');
+      pitchBtn.style.display = 'block';
+      if (currentRole === 'hitter') {
+        pitchBtn.innerHTML = '⚾ THROW PITCH!';
+      } else {
+        pitchBtn.innerHTML = '⚾ START PLAY!';
+      }
+      pitchBtn.disabled = false;
       document.getElementById('next-btn').style.display = 'none';
       
       isPlayAgain = false;
       isAnimating = false;
+
+      // Handle YOU glow and text for 3B role
+      const youText = document.getElementById('fielder-3b-you-text');
+      const youGlow = document.getElementById('fielder-3b-you-glow');
+      if (youText && youGlow) {
+        if (currentRole === '3rd_base') {
+          youText.setAttribute('opacity', '1');
+          youGlow.setAttribute('opacity', '1');
+        } else {
+          youText.setAttribute('opacity', '0');
+          youGlow.setAttribute('opacity', '0');
+        }
+      }
     }
 
     // ============================================================
     // MENU ROLE SELECTION
     // ============================================================
     function selectRole(role) {
-      if (role !== 'hitter') return;
+      if (role !== 'hitter' && role !== '3rd_base') return;
+      currentRole = role;
+      activeScenarios = (role === 'hitter' ? HITTER_SCENARIOS : THIRD_BASE_SCENARIOS);
+      currentScenarioIndex = 0;
+
       playSelectSound();
       document.getElementById('menu-screen').style.display = 'none';
       document.getElementById('game-screen').style.display = 'flex';
       
+      resetGame();
       setupScenario();
+    }
+
+    function goBackToMenu() {
+      playSelectSound();
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('menu-screen').style.display = 'flex';
+      resetGame();
     }
 
     const BATTER_HOME = { x: 148, y: 258 };
@@ -1434,10 +1585,17 @@
     // ============================================================
     function resetGame() {
       isPlayAgain = false;
-      pitchBtn.innerHTML = '⚾ THROW PITCH!';
+      
+      const pitchBtn = document.getElementById('pitch-btn');
+      if (currentRole === 'hitter') {
+        pitchBtn.innerHTML = '⚾ THROW PITCH!';
+      } else {
+        pitchBtn.innerHTML = '⚾ START PLAY!';
+      }
       
       cur = { ...BATTER_HOME };
       playerG.setAttribute('transform', `translate(${cur.x},${cur.y}) scale(${PLAYER_SCALE})`);
+      playerG.setAttribute('opacity', '1');
       currentBase = 'home';
       clearHighlights();
       
@@ -1447,6 +1605,11 @@
       batGroup.setAttribute('transform', '');
       ballG.setAttribute('opacity', '0');
       popflyBall.setAttribute('opacity', '0');
+      
+      const fielder3bG = document.getElementById('fielder-3b');
+      if (fielder3bG) {
+        fielder3bG.setAttribute('transform', `translate(78,172) scale(${PLAYER_SCALE})`);
+      }
       
       setupBaseRunners();
     }
@@ -1463,56 +1626,240 @@
       isAnimating = true;
       setDisabled(true);
 
+      // Hide YOU indicators when play begins
+      const youText = document.getElementById('fielder-3b-you-text');
+      const youGlow = document.getElementById('fielder-3b-you-glow');
+      if (youText) youText.setAttribute('opacity', '0');
+      if (youGlow) youGlow.setAttribute('opacity', '0');
+
       // Reset
       batGroup.setAttribute('transform', '');
       popflyBall.setAttribute('opacity', '0');
 
-      // 1. WIND-UP
-      await animate(400, t => {
-        pitcherArm.setAttribute('transform', `rotate(${easeInOut(t) * -110}, 8, -22)`);
-        pitcherG.setAttribute('transform', `translate(160,152) scale(${PLAYER_SCALE}) rotate(${easeInOut(t) * -5}, 0, -20)`);
-      });
-      await wait(120);
+      if (currentRole === 'hitter') {
+        // 1. WIND-UP
+        await animate(400, t => {
+          pitcherArm.setAttribute('transform', `rotate(${easeInOut(t) * -110}, 8, -22)`);
+          pitcherG.setAttribute('transform', `translate(160,152) scale(${PLAYER_SCALE}) rotate(${easeInOut(t) * -5}, 0, -20)`);
+        });
+        await wait(120);
 
-      // 2. THROW
-      pitcherBallHand.setAttribute('opacity', '0');
-      ballG.setAttribute('opacity', '1');
-      ballG.setAttribute('transform', 'translate(160,145)');
+        // 2. THROW
+        pitcherBallHand.setAttribute('opacity', '0');
+        ballG.setAttribute('opacity', '1');
+        ballG.setAttribute('transform', 'translate(160,145)');
 
-      // Initialize closeup ball and swing prep
-      cuBall.setAttribute('opacity', '1');
-      cuBall.setAttribute('transform', 'translate(260, 40)');
-      cuImpact.setAttribute('opacity', '0');
-      crackText.style.opacity = '0';
-      crackText.style.transform = 'translate(-50%,-50%) scale(0)';
-      flashEl.style.opacity = '0';
+        // Initialize closeup ball and swing prep
+        cuBall.setAttribute('opacity', '1');
+        cuBall.setAttribute('transform', 'translate(260, 40)');
+        cuImpact.setAttribute('opacity', '0');
+        crackText.style.opacity = '0';
+        crackText.style.transform = 'translate(-50%,-50%) scale(0)';
+        flashEl.style.opacity = '0';
 
-      const throwP = animate(220, t => {
-        const angle = -110 + easeOut(t) * 140;
-        pitcherArm.setAttribute('transform', `rotate(${angle}, 8, -22)`);
-        pitcherG.setAttribute('transform', `translate(160,152) scale(${PLAYER_SCALE}) rotate(${(1 - easeOut(t)) * -5}, 0, -20)`);
-      });
-      const ballTravelP = animate(280, t => {
-        const e = easeOut(t);
-        ballG.setAttribute('transform', `translate(${lerp(160, 148, e)},${lerp(145, 248, e) + Math.sin(t * Math.PI) * -8})`);
+        const throwP = animate(220, t => {
+          const angle = -110 + easeOut(t) * 140;
+          pitcherArm.setAttribute('transform', `rotate(${angle}, 8, -22)`);
+          pitcherG.setAttribute('transform', `translate(160,152) scale(${PLAYER_SCALE}) rotate(${(1 - easeOut(t)) * -5}, 0, -20)`);
+        });
+        const ballTravelP = animate(280, t => {
+          const e = easeOut(t);
+          ballG.setAttribute('transform', `translate(${lerp(160, 148, e)},${lerp(145, 248, e) + Math.sin(t * Math.PI) * -8})`);
+          
+          // Sync closeup ball travel and swing prep in real-time
+          const bx = lerp(260, 80, t);
+          const by = lerp(40, 88, t);
+          cuBall.setAttribute('transform', `translate(${bx},${by})`);
+          
+          const batAngle = t * 20;
+          cuBatGroup.setAttribute('transform', `rotate(${batAngle}, -38, -60)`);
+          const bodyRotate = t * 6;
+          cuBatter.setAttribute('transform', `translate(130,158) rotate(${bodyRotate}, 0, -80)`);
+        });
+        await Promise.all([throwP, ballTravelP]);
+
+        // Stop here! Pitch has arrived.
+        await wait(300);
+
+        // Show quiz overlay dynamically
+        showQuizForScenario();
+      } else {
+        // --- 3RD BASE ROLE FLOW ---
+        // 1. WIND-UP
+        await animate(400, t => {
+          pitcherArm.setAttribute('transform', `rotate(${easeInOut(t) * -110}, 8, -22)`);
+          pitcherG.setAttribute('transform', `translate(160,152) scale(${PLAYER_SCALE}) rotate(${easeInOut(t) * -5}, 0, -20)`);
+        });
+        await wait(120);
+
+        // 2. THROW
+        pitcherBallHand.setAttribute('opacity', '0');
+        ballG.setAttribute('opacity', '1');
+        ballG.setAttribute('transform', 'translate(160,145)');
+
+        // Closeup views prep
+        cuBall.setAttribute('opacity', '1');
+        cuBall.setAttribute('transform', 'translate(260, 40)');
+        cuImpact.setAttribute('opacity', '0');
+        crackText.style.opacity = '0';
+        crackText.style.transform = 'translate(-50%,-50%) scale(0)';
+        flashEl.style.opacity = '0';
+
+        // Ball travel to plate
+        const throwP = animate(220, t => {
+          const angle = -110 + easeOut(t) * 140;
+          pitcherArm.setAttribute('transform', `rotate(${angle}, 8, -22)`);
+          pitcherG.setAttribute('transform', `translate(160,152) scale(${PLAYER_SCALE}) rotate(${(1 - easeOut(t)) * -5}, 0, -20)`);
+        });
+        const ballTravelP = animate(280, t => {
+          const e = easeOut(t);
+          ballG.setAttribute('transform', `translate(${lerp(160, 148, e)},${lerp(145, 248, e) + Math.sin(t * Math.PI) * -8})`);
+          
+          const bx = lerp(260, 80, t);
+          const by = lerp(40, 88, t);
+          cuBall.setAttribute('transform', `translate(${bx},${by})`);
+          
+          const batAngle = t * 20;
+          cuBatGroup.setAttribute('transform', `rotate(${batAngle}, -38, -60)`);
+          const bodyRotate = t * 6;
+          cuBatter.setAttribute('transform', `translate(130,158) rotate(${bodyRotate}, 0, -80)`);
+        });
+        await Promise.all([throwP, ballTravelP]);
+
+        // 3. HIT! Swing & contact automatically (since the user is playing 3rd baseman watching the hit)
+        spawnDust(148, 240, 12);
+        playBatCrack();
         
-        // Sync closeup ball travel and swing prep in real-time
-        const bx = lerp(260, 80, t);
-        const by = lerp(40, 88, t);
-        cuBall.setAttribute('transform', `translate(${bx},${by})`);
+        // Impact lines and crack text
+        cuImpact.setAttribute('opacity', '1');
+        cuImpact.setAttribute('transform', 'translate(130,158)');
+        crackText.style.opacity = '1';
+        crackText.style.transform = 'translate(-50%,-50%) scale(1)';
+        flashEl.style.opacity = '0.95';
+        const flashFadeP = animate(120, t => { flashEl.style.opacity = String(0.95 * (1 - t)); });
+
+        // Batter swing follow through
+        const swingP = animate(200, t => {
+          const e = easeOut(t);
+          batGroup.setAttribute('transform', `rotate(${-30 + e * 180}, 8, -24)`);
+          playerG.setAttribute('transform', `translate(${BATTER_HOME.x},${BATTER_HOME.y}) scale(${PLAYER_SCALE}) rotate(${e * 25}, 0, -20)`);
+        });
+        const hitP = animate(200, t => {
+          ballG.setAttribute('opacity', String(1 - t));
+        });
+        const cuRicochetP = animate(300, t => {
+          const e = easeInOut(t);
+          const batAngle = 20 + e * 40;
+          cuBatGroup.setAttribute('transform', `rotate(${batAngle}, -38, -60)`);
+          const bodyRotate = 6 + e * 12;
+          cuBatter.setAttribute('transform', `translate(130,158) rotate(${bodyRotate}, 0, -80)`);
+          
+          const bx = lerp(80, -30, e);
+          const by = lerp(88, -20, e) - Math.sin(e * Math.PI) * 50;
+          cuBall.setAttribute('transform', `translate(${bx},${by})`);
+        });
+        await Promise.all([flashFadeP, swingP, hitP, cuRicochetP]);
+
+        // Clean up closeup elements
+        flashEl.style.opacity = '0';
+        ballG.setAttribute('opacity', '0');
+        pitcherBallHand.setAttribute('opacity', '1');
+        crackText.style.opacity = '0';
+        cuImpact.setAttribute('opacity', '0');
+        cuBall.setAttribute('opacity', '0');
+
+        // 4. BALL FLIES TOWARDS 3RD BASE & 3RD BASEMAN MOVES TO FIELD
+        const scenario = activeScenarios[currentScenarioIndex];
+        const isPopUp = (scenario.id === 101);
+        setStatus(isPopUp ? "POP-UP FLY TO 3RD BASE!" : "GROUND BALL TO 3RD BASE!");
+
+        const popFlyTarget = { x: 74, y: 155 }; // catch location near 3rd base
+        const fielder3bStart = { x: 78, y: 172 };
+        const fielder3bTarget = { x: 74, y: 155 };
+        const runner2bStart = { x: 160, y: 50 };
+        const runner2bTarget = { x: 109, y: 101 }; // half way between 2B and 3B
         
-        const batAngle = t * 20;
-        cuBatGroup.setAttribute('transform', `rotate(${batAngle}, -38, -60)`);
-        const bodyRotate = t * 6;
-        cuBatter.setAttribute('transform', `translate(130,158) rotate(${bodyRotate}, 0, -80)`);
-      });
-      await Promise.all([throwP, ballTravelP]);
+        // Runner 1B for Scenario 103
+        const runner1bStart = { x: 262, y: 152 };
+        const runner1bTarget = { x: 211, y: 101 };
 
-      // Stop here! Pitch has arrived.
-      await wait(300);
+        popflyBall.setAttribute('opacity', '1');
+        popflyBall.setAttribute('transform', 'translate(148,248)');
 
-      // Show quiz overlay dynamically
-      showQuizForScenario();
+        const ballDuration = 1400; // flight time for pop fly or grounder roll
+
+        const ballFlightP = animate(ballDuration, t => {
+          const bx = lerp(148, popFlyTarget.x, t);
+          const by = lerp(248, popFlyTarget.y, t);
+          
+          let arc = 0;
+          let scale = 1.0;
+          if (isPopUp) {
+            // High arc height for pop-up
+            arc = Math.sin(t * Math.PI) * -80;
+            scale = 1.0 + Math.sin(t * Math.PI) * 0.4;
+          } else {
+            // Low bouncing/rolling grounder
+            arc = Math.abs(Math.sin(t * Math.PI * 4)) * -4; 
+            scale = 1.0 - t * 0.2;
+          }
+          popflyBall.setAttribute('transform', `translate(${bx},${by + arc}) scale(${scale})`);
+        });
+
+        // 3rd baseman runs to catch/field spot
+        const fielderMoveP = animate(ballDuration, t => {
+          const x = lerp(fielder3bStart.x, fielder3bTarget.x, t);
+          const y = lerp(fielder3bStart.y, fielder3bTarget.y, t);
+          const bob = Math.sin(t * 12) * 2;
+          const scale = getScaleForY(y);
+          const fielder3bG = document.getElementById('fielder-3b');
+          fielder3bG.setAttribute('transform', `translate(${x},${y + bob}) scale(${scale})`);
+        });
+
+        // Runner runs off 2B towards 3B
+        const runnerMoveP = animate(ballDuration * 0.8, t => {
+          const x = lerp(runner2bStart.x, runner2bTarget.x, t);
+          const y = lerp(runner2bStart.y, runner2bTarget.y, t);
+          const bob = Math.sin(t * 10) * 2;
+          const scale = getScaleForY(y);
+          const runner2b = document.getElementById('runner-2b');
+          runner2b.setAttribute('transform', `translate(${x},${y + bob}) scale(${scale})`);
+        });
+
+        // Runner 1B runs towards 2B (only in Scenario 103)
+        let runner1bMoveP = Promise.resolve();
+        if (scenario.id === 103) {
+          runner1bMoveP = animate(ballDuration * 0.8, t => {
+            const x = lerp(runner1bStart.x, runner1bTarget.x, t);
+            const y = lerp(runner1bStart.y, runner1bTarget.y, t);
+            const bob = Math.sin(t * 10) * 2;
+            const scale = getScaleForY(y);
+            const runner1b = document.getElementById('runner-1b');
+            runner1b.setAttribute('transform', `translate(${x},${y + bob}) scale(${scale})`);
+          });
+        }
+
+        // Batter runs a bit towards 1B
+        const batterRunP = animate(ballDuration * 0.6, t => {
+          const x = lerp(BATTER_HOME.x, BATTER_HOME.x + 30, t);
+          const y = lerp(BATTER_HOME.y, BATTER_HOME.y - 30, t);
+          const scale = getScaleForY(y);
+          playerG.setAttribute('transform', `translate(${x},${y}) scale(${scale})`);
+        });
+
+        await Promise.all([ballFlightP, fielderMoveP, runnerMoveP, runner1bMoveP, batterRunP]);
+
+        // 5. CATCH / FIELD BALL
+        playGloveCatch();
+        spawnDust(popFlyTarget.x, popFlyTarget.y, 8);
+        popflyBall.setAttribute('opacity', '0'); // Caught/Fielded!
+        
+        setStatus(isPopUp ? "CAUGHT! Batter is out! Play continues..." : "FIELDED! Play continues...");
+        await wait(600);
+
+        // Show the quiz!
+        showQuizForScenario();
+      }
     }
 
     // ============================================================
@@ -1560,7 +1907,7 @@
       });
 
       // 4. Scenario play outcome starts flying immediately on contact!
-      const scenario = SCENARIOS[currentScenarioIndex];
+      const scenario = activeScenarios[currentScenarioIndex];
       const ballFlightP = playScenarioPlay(scenario.id);
 
       await Promise.all([flashFadeP, swingP, hitP, cuRicochetP, ballFlightP]);
@@ -1642,7 +1989,7 @@
     // SHOW QUIZ OVERLAY FOR CURRENT SCENARIO
     // ============================================================
     function showQuizForScenario() {
-      const scenario = SCENARIOS[currentScenarioIndex];
+      const scenario = activeScenarios[currentScenarioIndex];
       
       document.getElementById('quiz-situation').textContent = scenario.details;
       document.getElementById('quiz-question').innerHTML = scenario.question;
@@ -1674,30 +2021,655 @@
       // Hide quiz immediately
       quizOverlay.classList.remove('visible');
 
-      const scenario = SCENARIOS[currentScenarioIndex];
+      const scenario = activeScenarios[currentScenarioIndex];
       const isCorrect = (index === scenario.correctIndex);
 
-      if (isCorrect) {
-        // ✅ CORRECT
-        // Play hit animation (swing, contact, ball flight, and base running)
-        await playSwingAndHit();
-        
-        // Show result card
-        await showResult(true, scenario.why);
-        
-        // Show NEXT button
-        isAnimating = false;
-        showNextButton();
+      if (currentRole === 'hitter') {
+        if (isCorrect) {
+          // ✅ CORRECT
+          // Play hit animation (swing, contact, ball flight, and base running)
+          await playSwingAndHit();
+          
+          // Show result card
+          await showResult(true, scenario.why);
+          
+          // Show NEXT button
+          isAnimating = false;
+          showNextButton();
+        } else {
+          // ❌ WRONG
+          // Play swing and miss animation
+          await playSwingAndMiss();
+          
+          // Show result card
+          await showResult(false, scenario.why);
+          
+          isAnimating = false;
+        }
       } else {
-        // ❌ WRONG
-        // Play swing and miss animation
-        await playSwingAndMiss();
-        
-        // Show result card
-        await showResult(false, scenario.why);
-        
-        isAnimating = false;
-        showTryAgainButton();
+        // --- 3RD BASE ROLE ---
+        if (isCorrect) {
+          // ✅ CORRECT
+          if (scenario.id === 103) {
+            await playForcePlayAt3rd();
+          } else if (scenario.id === 104) {
+            await playStealTagAt3rd();
+          } else if (scenario.id === 105) {
+            await playThrowTo2nd();
+          } else if (scenario.id === 106) {
+            await playThrowTo1st();
+          } else {
+            await playCorrectTagPlay();
+          }
+          await showResult(true, scenario.why);
+          isAnimating = false;
+          showNextButton();
+        } else {
+          // ❌ WRONG
+          await playIncorrectPlay(index);
+          await showResult(false, scenario.why);
+          isAnimating = false;
+          showTryAgainButton();
+        }
+      }
+    }
+
+    async function playForcePlayAt3rd() {
+      setStatus("RUNNING TO TOUCH 3RD BASE FOR THE FORCE OUT!");
+      const fielder3bG = document.getElementById('fielder-3b');
+      const runner2bG = document.getElementById('runner-2b');
+      const runner1bG = document.getElementById('runner-1b');
+
+      const fielderStart = { x: 74, y: 155 };
+      const fielderTarget = BASE_POS['3b']; // { x: 58, y: 152 }
+      
+      const runner2bStart = { x: 109, y: 101 };
+      const runner2bTarget = BASE_POS['3b'];
+      
+      const runner1bStart = { x: 211, y: 101 };
+      const runner1bTarget = BASE_POS['2b']; // { x: 160, y: 50 }
+
+      const duration = 700;
+      await animate(duration, t => {
+        // Fielder runs to 3B
+        const fx = lerp(fielderStart.x, fielderTarget.x, t);
+        const fy = lerp(fielderStart.y, fielderTarget.y, t);
+        const fBob = Math.sin(t * 8) * 1.5;
+        const fScale = getScaleForY(fy);
+        fielder3bG.setAttribute('transform', `translate(${fx},${fy + fBob}) scale(${fScale})`);
+
+        // Runner from 2B runs to 3B
+        const r2x = lerp(runner2bStart.x, runner2bTarget.x, t);
+        const r2y = lerp(runner2bStart.y, runner2bTarget.y, t);
+        const r2Bob = Math.sin(t * 8) * 1.5;
+        const r2Scale = getScaleForY(r2y);
+        runner2bG.setAttribute('transform', `translate(${r2x},${r2y + r2Bob}) scale(${r2Scale})`);
+
+        // Runner from 1B runs to 2B
+        const r1x = lerp(runner1bStart.x, runner1bTarget.x, t);
+        const r1y = lerp(runner1bStart.y, runner1bTarget.y, t);
+        const r1Bob = Math.sin(t * 8) * 1.5;
+        const r1Scale = getScaleForY(r1y);
+        runner1bG.setAttribute('transform', `translate(${r1x},${r1y + r1Bob}) scale(${r1Scale})`);
+
+        // Batter runs to 1B
+        const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
+        const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
+        const bScale = getScaleForY(by);
+        playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
+      });
+
+      // Force out!
+      flashBase('3b');
+      playGloveCatch();
+      spawnDust(fielderTarget.x, fielderTarget.y, 10);
+      playCrowdCheer(2.5, 0.25);
+
+      // Hide runner 2b (out)
+      runner2bG.setAttribute('opacity', '0');
+      setStatus("FORCE OUT AT 3RD BASE! LEAD RUNNER IS OUT!");
+      await wait(600);
+    }
+
+    async function playStealTagAt3rd() {
+      setStatus("TAGGING THE RUNNER AT 3RD BASE!");
+      const fielder3bG = document.getElementById('fielder-3b');
+      const runner2bG = document.getElementById('runner-2b');
+
+      const fielderStart = { x: 62, y: 154 };
+      const fielderTarget = { x: 58, y: 152 };
+      const runnerStart = { x: 109, y: 101 };
+      const runnerTarget = { x: 58, y: 152 };
+
+      const duration = 600;
+      await animate(duration, t => {
+        // Fielder reaches for the tag
+        const fx = lerp(fielderStart.x, fielderTarget.x, t);
+        const fy = lerp(fielderStart.y, fielderTarget.y, t);
+        const scale = getScaleForY(fy);
+        fielder3bG.setAttribute('transform', `translate(${fx},${fy}) scale(${scale})`);
+
+        // Runner slides into 3B
+        const rx = lerp(runnerStart.x, runnerTarget.x, t);
+        const ry = lerp(runnerStart.y, runnerTarget.y, t);
+        const rBob = Math.sin(t * Math.PI) * -6; // slide curve
+        const rScale = getScaleForY(ry);
+        runner2bG.setAttribute('transform', `translate(${rx},${ry + rBob}) scale(${rScale})`);
+      });
+
+      playTagSound();
+      spawnDust(runnerTarget.x, runnerTarget.y, 14);
+      playCrowdCheer(2.5, 0.25);
+
+      runner2bG.setAttribute('opacity', '0'); // Tagged out!
+      setStatus("OUT AT 3RD BASE! STEAL PREVENTED!");
+      await wait(600);
+    }
+
+    async function playThrowTo2nd() {
+      setStatus("THROWING TO 2ND BASE FOR THE FORCE OUT!");
+      const fielder3bG = document.getElementById('fielder-3b');
+      const runner1bG = document.getElementById('runner-1b');
+      const secondBaseman = document.getElementById('fielder-2b');
+
+      const fielderPos = { x: 74, y: 155 };
+      const targetPos = BASE_POS['2b']; // { x: 160, y: 50 }
+      const runnerStart = { x: 211, y: 101 };
+      const runnerTarget = BASE_POS['2b'];
+
+      popflyBall.setAttribute('opacity', '1');
+      popflyBall.setAttribute('transform', `translate(${fielderPos.x},${fielderPos.y})`);
+
+      const duration = 700;
+      const throwP = animate(350, t => {
+        const bx = lerp(fielderPos.x, targetPos.x, t);
+        const by = lerp(fielderPos.y, targetPos.y, t);
+        popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(0.6)`);
+      });
+
+      const runnerP = animate(duration, t => {
+        // Runner runs to 2B
+        const rx = lerp(runnerStart.x, runnerTarget.x, t);
+        const ry = lerp(runnerStart.y, runnerTarget.y, t);
+        const scale = getScaleForY(ry);
+        runner1bG.setAttribute('transform', `translate(${rx},${ry}) scale(${scale})`);
+
+        // Second baseman covers 2B
+        const sbx = lerp(218, 160, t);
+        const sby = lerp(108, 50, t);
+        const sbScale = getScaleForY(sby);
+        secondBaseman.setAttribute('transform', `translate(${sbx},${sby}) scale(${sbScale})`);
+
+        // Batter runs to 1B
+        const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
+        const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
+        const bScale = getScaleForY(by);
+        playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
+      });
+
+      await Promise.all([throwP, runnerP]);
+
+      playGloveCatch();
+      flashBase('2b');
+      spawnDust(targetPos.x, targetPos.y, 10);
+      playCrowdCheer(2.5, 0.25);
+      popflyBall.setAttribute('opacity', '0');
+      runner1bG.setAttribute('opacity', '0'); // force out!
+
+      // Reset second baseman back
+      secondBaseman.setAttribute('transform', `translate(218,108) scale(${PLAYER_SCALE})`);
+
+      setStatus("OUT AT 2ND BASE! FORCE OUT!");
+      await wait(600);
+    }
+
+    async function playThrowTo1st() {
+      setStatus("THROWING TO 1ST BASE FOR THE OUT!");
+      const firstBaseman = document.getElementById('fielder-1b');
+
+      const fielderPos = { x: 74, y: 155 };
+      const targetPos = BASE_POS['1b']; // { x: 262, y: 152 }
+
+      popflyBall.setAttribute('opacity', '1');
+      popflyBall.setAttribute('transform', `translate(${fielderPos.x},${fielderPos.y})`);
+
+      const duration = 700;
+      const throwP = animate(350, t => {
+        const bx = lerp(fielderPos.x, targetPos.x, t);
+        const by = lerp(fielderPos.y, targetPos.y, t);
+        popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(0.6)`);
+      });
+
+      const runnerP = animate(duration, t => {
+        // Batter runs to 1B
+        const bx = lerp(BATTER_HOME.x + 30, targetPos.x, t);
+        const by = lerp(BATTER_HOME.y - 30, targetPos.y, t);
+        const bScale = getScaleForY(by);
+        playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
+
+        // First baseman covers 1B
+        const fbx = lerp(240, 262, t);
+        const fby = lerp(172, 152, t);
+        const fbScale = getScaleForY(fby);
+        firstBaseman.setAttribute('transform', `translate(${fbx},${fby}) scale(${fbScale})`);
+      });
+
+      await Promise.all([throwP, runnerP]);
+
+      playGloveCatch();
+      flashBase('1b');
+      spawnDust(targetPos.x, targetPos.y, 10);
+      playCrowdCheer(2.5, 0.25);
+      popflyBall.setAttribute('opacity', '0');
+      
+      // Reset first baseman back
+      firstBaseman.setAttribute('transform', `translate(240,172) scale(${PLAYER_SCALE})`);
+
+      // Batter stays at 1B but is out (opacity decrease)
+      playerG.setAttribute('opacity', '0.5'); 
+
+      setStatus("OUT AT 1ST BASE! BATTER IS RETIRED!");
+      await wait(600);
+    }
+
+    async function playCorrectTagPlay() {
+      setStatus("RUNNING TO TAG THE RUNNER!");
+      const fielder3bG = document.getElementById('fielder-3b');
+      const runner2bG = document.getElementById('runner-2b');
+
+      const fielderStart = { x: 74, y: 155 };
+      const runnerStart = { x: 109, y: 101 };
+      
+      const tagSpot = { x: 130, y: 78 };
+      const runnerBackSpot = { x: 130, y: 78 }; // tagged here
+
+      const chaseDuration = 900;
+      await animate(chaseDuration, t => {
+        // Fielder runs to tag spot
+        const fx = lerp(fielderStart.x, tagSpot.x, t);
+        const fy = lerp(fielderStart.y, tagSpot.y, t);
+        const fBob = Math.sin(t * 12) * 2;
+        const fScale = getScaleForY(fy);
+        fielder3bG.setAttribute('transform', `translate(${fx},${fy + fBob}) scale(${fScale})`);
+
+        // Runner runs back towards 2B
+        const rx = lerp(runnerStart.x, runnerBackSpot.x, t);
+        const ry = lerp(runnerStart.y, runnerBackSpot.y, t);
+        const rBob = Math.sin(t * 10) * 2;
+        const rScale = getScaleForY(ry);
+        runner2bG.setAttribute('transform', `translate(${rx},${ry + rBob}) scale(${rScale})`);
+      });
+
+      // Tag contact!
+      playTagSound();
+      spawnDust(tagSpot.x, tagSpot.y, 14);
+      playCrowdCheer(2.5, 0.25);
+
+      // Hide runner (tagged out)
+      runner2bG.setAttribute('opacity', '0');
+      setStatus("DOUBLE PLAY! TAGGED OUT!");
+      await wait(600);
+    }
+
+    async function playIncorrectPlay(index) {
+      const fielder3bG = document.getElementById('fielder-3b');
+      const runner2bG = document.getElementById('runner-2b');
+      const runner1bG = document.getElementById('runner-1b');
+      const scenario = activeScenarios[currentScenarioIndex];
+
+      if (scenario.id === 104) {
+        // --- SCENARIO 104 (STEAL PLAY) ---
+        const runnerStart = { x: 109, y: 101 };
+        const runnerTarget = BASE_POS['3b']; // { x: 58, y: 152 }
+
+        if (index === 1) {
+          // --- STAND AND WATCH ---
+          setStatus("WATCHING THE RUNNER STEAL...");
+          const duration = 600;
+          await animate(duration, t => {
+            // Runner steals 3B
+            const rx = lerp(runnerStart.x, runnerTarget.x, t);
+            const ry = lerp(runnerStart.y, runnerTarget.y, t);
+            const scale = getScaleForY(ry);
+            runner2bG.setAttribute('transform', `translate(${rx},${ry}) scale(${scale})`);
+          });
+          
+          flashBase('3b');
+          spawnDust(runnerTarget.x, runnerTarget.y, 8);
+          setStatus("SAFE! RUNNER STOLE 3RD BASE! NO ONE COVERED!");
+          await wait(800);
+
+        } else if (index === 2) {
+          // --- COVER 2ND BASE (WRONG BASE) ---
+          setStatus("RUNNING TO COVER 2ND BASE...");
+          const fielderStart = { x: 78, y: 172 };
+          const fielderTarget = BASE_POS['2b']; // { x: 160, y: 50 }
+
+          const duration = 800;
+          await animate(duration, t => {
+            // Fielder runs to 2B
+            const fx = lerp(fielderStart.x, fielderTarget.x, t);
+            const fy = lerp(fielderStart.y, fielderTarget.y, t);
+            const fScale = getScaleForY(fy);
+            fielder3bG.setAttribute('transform', `translate(${fx},${fy}) scale(${fScale})`);
+
+            // Runner steals 3B
+            const rx = lerp(runnerStart.x, runnerTarget.x, t);
+            const ry = lerp(runnerStart.y, runnerTarget.y, t);
+            const rScale = getScaleForY(ry);
+            runner2bG.setAttribute('transform', `translate(${rx},${ry}) scale(${rScale})`);
+          });
+
+          flashBase('3b');
+          spawnDust(runnerTarget.x, runnerTarget.y, 8);
+          setStatus("SAFE! RUNNER STOLE 3B! YOU COVERED THE WRONG BASE!");
+          await wait(800);
+        }
+
+      } else if (scenario.id === 105) {
+        // --- SCENARIO 105 (GROUNDER, RUNNER ON 1st) ---
+        const runnerStart = { x: 211, y: 101 };
+        const runnerTarget = BASE_POS['2b']; // { x: 160, y: 50 }
+
+        if (index === 1) {
+          // --- TOUCH 3RD BASE (NO FORCE PLAY AT 3RD) ---
+          setStatus("RUNNING TO TOUCH 3RD BASE...");
+          const fielderStart = { x: 74, y: 155 };
+          const fielderTarget = BASE_POS['3b'];
+
+          const duration = 800;
+          await animate(duration, t => {
+            // Fielder runs to 3B
+            const fx = lerp(fielderStart.x, fielderTarget.x, t);
+            const fy = lerp(fielderStart.y, fielderTarget.y, t);
+            const fScale = getScaleForY(fy);
+            fielder3bG.setAttribute('transform', `translate(${fx},${fy}) scale(${fScale})`);
+
+            // Runner 1B runs to 2B safely
+            const rx = lerp(runnerStart.x, runnerTarget.x, t);
+            const ry = lerp(runnerStart.y, runnerTarget.y, t);
+            const rScale = getScaleForY(ry);
+            runner1bG.setAttribute('transform', `translate(${rx},${ry}) scale(${rScale})`);
+
+            // Batter runs to 1B
+            const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
+            const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
+            const bScale = getScaleForY(by);
+            playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
+          });
+
+          flashBase('3b');
+          spawnDust(fielderTarget.x, fielderTarget.y, 8);
+          playGloveCatch();
+          
+          setStatus("TOUCHED 3RD BASE! BUT RUNNERS ARE SAFE!");
+          await wait(800);
+
+        } else if (index === 2) {
+          // --- THROW HOME ---
+          setStatus("THROWING TO HOME PLATE...");
+          const fielderPos = { x: 74, y: 155 };
+          const homePos = { x: 160, y: 282 };
+
+          popflyBall.setAttribute('opacity', '1');
+          popflyBall.setAttribute('transform', `translate(${fielderPos.x},${fielderPos.y})`);
+
+          const duration = 800;
+          const throwP = animate(400, t => {
+            const bx = lerp(fielderPos.x, homePos.x, t);
+            const by = lerp(fielderPos.y, homePos.y, t);
+            popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(0.6)`);
+          });
+
+          const runnersP = animate(duration, t => {
+            // Runner 1B runs to 2B
+            const rx = lerp(runnerStart.x, runnerTarget.x, t);
+            const ry = lerp(runnerStart.y, runnerTarget.y, t);
+            const rScale = getScaleForY(ry);
+            runner1bG.setAttribute('transform', `translate(${rx},${ry}) scale(${rScale})`);
+
+            // Batter runs to 1B
+            const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
+            const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
+            const bScale = getScaleForY(by);
+            playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
+          });
+
+          await Promise.all([throwP, runnersP]);
+          
+          playGloveCatch();
+          popflyBall.setAttribute('opacity', '0');
+          
+          setStatus("THREW TO HOME! BUT RUNNERS ARE SAFE!");
+          await wait(800);
+        }
+
+      } else if (scenario.id === 106) {
+        // --- SCENARIO 106 (GROUNDER, BASES EMPTY) ---
+        if (index === 1) {
+          // --- THROW TO 2ND BASE (WRONG BASE) ---
+          setStatus("THROWING TO 2ND BASE...");
+          const fielderPos = { x: 74, y: 155 };
+          const targetPos = BASE_POS['2b']; // { x: 160, y: 50 }
+
+          popflyBall.setAttribute('opacity', '1');
+          popflyBall.setAttribute('transform', `translate(${fielderPos.x},${fielderPos.y})`);
+
+          const duration = 800;
+          const throwP = animate(400, t => {
+            const bx = lerp(fielderPos.x, targetPos.x, t);
+            const by = lerp(fielderPos.y, targetPos.y, t);
+            popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(0.6)`);
+          });
+
+          const runnerP = animate(duration, t => {
+            // Batter runs to 1B
+            const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
+            const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
+            const bScale = getScaleForY(by);
+            playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
+          });
+
+          await Promise.all([throwP, runnerP]);
+          
+          playGloveCatch();
+          popflyBall.setAttribute('opacity', '0');
+          
+          setStatus("THREW TO 2ND! BUT BATTER IS SAFE AT 1ST!");
+          await wait(800);
+
+        } else if (index === 2) {
+          // --- THROW TO HOME ---
+          setStatus("THROWING TO HOME PLATE...");
+          const fielderPos = { x: 74, y: 155 };
+          const homePos = { x: 160, y: 282 };
+
+          popflyBall.setAttribute('opacity', '1');
+          popflyBall.setAttribute('transform', `translate(${fielderPos.x},${fielderPos.y})`);
+
+          const duration = 800;
+          const throwP = animate(400, t => {
+            const bx = lerp(fielderPos.x, homePos.x, t);
+            const by = lerp(fielderPos.y, homePos.y, t);
+            popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(0.6)`);
+          });
+
+          const runnerP = animate(duration, t => {
+            // Batter runs to 1B
+            const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
+            const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
+            const bScale = getScaleForY(by);
+            playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
+          });
+
+          await Promise.all([throwP, runnerP]);
+          
+          playGloveCatch();
+          popflyBall.setAttribute('opacity', '0');
+          
+          setStatus("THREW TO HOME! BUT BATTER IS SAFE AT 1ST!");
+          await wait(800);
+        }
+
+      } else {
+        // --- SCENARIO 101, 102 & 103 (PREVIOUS SCENARIOS) ---
+        if (scenario.id === 103) {
+          // --- SCENARIO 103 INCORRECT FLOWS ---
+          if (index === 1) {
+            // --- TAG RUNNER (INCORRECT) ---
+            setStatus("ATTEMPTING TO TAG THE RUNNER...");
+            const fielderStart = { x: 74, y: 155 };
+            const tagSpot = { x: 92, y: 124 };
+            const runner2bStart = { x: 109, y: 101 };
+            const runner2bTarget = BASE_POS['3b'];
+            
+            const runner1bStart = { x: 211, y: 101 };
+            const runner1bTarget = BASE_POS['2b'];
+
+            const duration = 800;
+            await animate(duration, t => {
+              const fx = lerp(fielderStart.x, tagSpot.x, t);
+              const fy = lerp(fielderStart.y, tagSpot.y, t);
+              const fBob = Math.sin(t * 10) * 2;
+              const fScale = getScaleForY(fy);
+              fielder3bG.setAttribute('transform', `translate(${fx},${fy + fBob}) scale(${fScale})`);
+
+              const r2x = lerp(runner2bStart.x, runner2bTarget.x, t);
+              const r2y = lerp(runner2bStart.y, runner2bTarget.y, t);
+              const r2Bob = Math.sin(t * 8) * 1.5;
+              const r2Scale = getScaleForY(r2y);
+              runner2bG.setAttribute('transform', `translate(${r2x},${r2y + r2Bob}) scale(${r2Scale})`);
+
+              const r1x = lerp(runner1bStart.x, runner1bTarget.x, t);
+              const r1y = lerp(runner1bStart.y, runner1bTarget.y, t);
+              const r1Bob = Math.sin(t * 8) * 1.5;
+              const r1Scale = getScaleForY(r1y);
+              runner1bG.setAttribute('transform', `translate(${r1x},${r1y + r1Bob}) scale(${r1Scale})`);
+
+              const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
+              const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
+              const bScale = getScaleForY(by);
+              playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
+            });
+
+            flashBase('3b');
+            spawnDust(runner2bTarget.x, runner2bTarget.y, 8);
+            setStatus("SAFE! RUNNER SLID SAFELY INTO 3RD BASE!");
+            await wait(800);
+
+          } else if (index === 2) {
+            // --- THROW HOME (INCORRECT) ---
+            setStatus("THROWING TO HOME PLATE...");
+            const fielderPos = { x: 74, y: 155 };
+            const homePos = { x: 160, y: 282 };
+            const runner2bStart = { x: 109, y: 101 };
+            const runner2bTarget = BASE_POS['3b'];
+            const runner1bStart = { x: 211, y: 101 };
+            const runner1bTarget = BASE_POS['2b'];
+
+            popflyBall.setAttribute('opacity', '1');
+            popflyBall.setAttribute('transform', `translate(${fielderPos.x},${fielderPos.y})`);
+
+            const duration = 800;
+            const throwP = animate(400, t => {
+              const bx = lerp(fielderPos.x, homePos.x, t);
+              const by = lerp(fielderPos.y, homePos.y, t);
+              popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(0.6)`);
+            });
+
+            const runnersP = animate(duration, t => {
+              const r2x = lerp(runner2bStart.x, runner2bTarget.x, t);
+              const r2y = lerp(runner2bStart.y, runner2bTarget.y, t);
+              const r2Scale = getScaleForY(r2y);
+              runner2bG.setAttribute('transform', `translate(${r2x},${r2y}) scale(${r2Scale})`);
+
+              const r1x = lerp(runner1bStart.x, runner1bTarget.x, t);
+              const r1y = lerp(runner1bStart.y, runner1bTarget.y, t);
+              const r1Scale = getScaleForY(r1y);
+              runner1bG.setAttribute('transform', `translate(${r1x},${r1y}) scale(${r1Scale})`);
+
+              const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
+              const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
+              const bScale = getScaleForY(by);
+              playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
+            });
+
+            await Promise.all([throwP, runnersP]);
+
+            playGloveCatch();
+            popflyBall.setAttribute('opacity', '0');
+
+            setStatus("THREW TO HOME! BUT ALL RUNNERS ADVANCED SAFELY!");
+            await wait(800);
+          }
+
+        } else {
+          // --- SCENARIO 101 & 102 INCORRECT FLOWS ---
+          if (index === 0) {
+            // --- TOUCH 3RD BASE ---
+            setStatus("RUNNING TO TOUCH 3RD BASE...");
+            const fielderStart = { x: 74, y: 155 };
+            const fielderTarget = BASE_POS['3b']; // { x: 58, y: 152 }
+            const runnerStart = { x: 109, y: 101 };
+            const runnerTarget = BASE_POS['2b']; // { x: 160, y: 50 }
+
+            const duration = 800;
+            await animate(duration, t => {
+              const fx = lerp(fielderStart.x, fielderTarget.x, t);
+              const fy = lerp(fielderStart.y, fielderTarget.y, t);
+              const fBob = Math.sin(t * 10) * 2;
+              const fScale = getScaleForY(fy);
+              fielder3bG.setAttribute('transform', `translate(${fx},${fy + fBob}) scale(${fScale})`);
+
+              const rx = lerp(runnerStart.x, runnerTarget.x, t);
+              const ry = lerp(runnerStart.y, runnerTarget.y, t);
+              const rBob = Math.sin(t * 10) * 2;
+              const rScale = getScaleForY(ry);
+              runner2bG.setAttribute('transform', `translate(${rx},${ry + rBob}) scale(${rScale})`);
+            });
+
+            flashBase('3b');
+            spawnDust(fielderTarget.x, fielderTarget.y, 8);
+            playGloveCatch();
+            
+            setStatus("TOUCHED 3RD BASE! BUT RUNNER IS SAFE AT 2ND!");
+            await wait(800);
+
+          } else if (index === 2) {
+            // --- THROW TO HOME ---
+            setStatus("THROWING TO HOME PLATE...");
+            const fielderPos = { x: 74, y: 155 };
+            const homePos = { x: 160, y: 282 };
+            const runnerStart = { x: 109, y: 101 };
+            const runnerTarget = BASE_POS['2b']; // { x: 160, y: 50 }
+
+            popflyBall.setAttribute('opacity', '1');
+            popflyBall.setAttribute('transform', `translate(${fielderPos.x},${fielderPos.y})`);
+
+            const duration = 800;
+            const throwP = animate(400, t => {
+              const bx = lerp(fielderPos.x, homePos.x, t);
+              const by = lerp(fielderPos.y, homePos.y, t);
+              popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(0.6)`);
+            });
+
+            const runnerP = animate(duration, t => {
+              const rx = lerp(runnerStart.x, runnerTarget.x, t);
+              const ry = lerp(runnerStart.y, runnerTarget.y, t);
+              const rBob = Math.sin(t * 10) * 2;
+              const rScale = getScaleForY(ry);
+              runner2bG.setAttribute('transform', `translate(${rx},${ry + rBob}) scale(${rScale})`);
+            });
+
+            await Promise.all([throwP, runnerP]);
+            
+            playGloveCatch();
+            popflyBall.setAttribute('opacity', '0');
+            
+            setStatus("THREW TO HOME! BUT RUNNER IS SAFE AT 2ND!");
+            await wait(800);
+          }
+        }
       }
     }
 
@@ -1708,7 +2680,7 @@
       pitchBtn.style.display = 'none';
       nextBtn.style.display = 'block';
       
-      if (currentScenarioIndex === SCENARIOS.length - 1) {
+      if (currentScenarioIndex === activeScenarios.length - 1) {
         nextBtn.innerHTML = '🏆 REPLAY ALL SCENARIOS 🏆';
       } else {
         nextBtn.innerHTML = 'NEXT SCENARIO ➡️';
@@ -1731,7 +2703,7 @@
     function nextScenario() {
       playSelectSound();
       
-      if (currentScenarioIndex === SCENARIOS.length - 1) {
+      if (currentScenarioIndex === activeScenarios.length - 1) {
         currentScenarioIndex = 0;
       } else {
         currentScenarioIndex++;
@@ -1854,7 +2826,7 @@
     // SCENARIO PLAY OUTCOME ANIMATIONS
     // ============================================================
     async function playScenarioPlay(scenarioId) {
-      const scenario = SCENARIOS[currentScenarioIndex];
+      const scenario = activeScenarios[currentScenarioIndex];
       
       if (scenarioId === 1) {
         // Deep fly ball to center field
