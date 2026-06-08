@@ -141,8 +141,83 @@ async function previewPlay() {
   try {
     // 1. Run Pitch + Hit + Field
     await AnimationEngine.triggerPitch(role, hitPreset, runners, async () => {
-      // 2. Wait a small moment to simulate quiz transition
-      await AnimationEngine.wait(1200);
+      // Get the quiz inputs from the form
+      const question = document.getElementById('scenario-question').value.trim() || 'Where should you throw the ball?';
+      const choices = [
+        document.getElementById('scenario-choice-0').value.trim() || 'Choice A (Not set)',
+        document.getElementById('scenario-choice-1').value.trim() || 'Choice B (Not set)',
+        document.getElementById('scenario-choice-2').value.trim() || 'Choice C (Not set)'
+      ];
+      const correctIndex = parseInt(document.getElementById('scenario-correct').value, 10);
+      const why = document.getElementById('scenario-why').value.trim() || 'No explanation provided.';
+
+      // Get overlay elements
+      const overlay = document.getElementById('quiz-preview-overlay');
+      const qText = document.getElementById('quiz-preview-question');
+      const cContainer = document.getElementById('quiz-preview-choices');
+      const expBox = document.getElementById('quiz-preview-explanation-box');
+      const expWhy = document.getElementById('quiz-preview-why');
+      const timerEl = document.getElementById('quiz-preview-timer');
+
+      if (overlay && qText && cContainer && expBox && expWhy && timerEl) {
+        // Set values
+        qText.textContent = question;
+        expWhy.textContent = why;
+        expBox.classList.add('hidden');
+        
+        // Render choices initially
+        cContainer.innerHTML = '';
+        choices.forEach((choice, index) => {
+          const letter = ['A', 'B', 'C'][index];
+          const div = document.createElement('div');
+          div.id = `preview-choice-${index}`;
+          div.className = 'flex items-center gap-3 px-3 py-2 border-2 border-vintage-navy/15 rounded-xl text-xs font-semibold bg-white/60 transition-all duration-300';
+          div.innerHTML = `<span class="font-pixel text-[8px] text-vintage-navy/55">${letter}</span> <span class="flex-grow">${choice}</span>`;
+          cContainer.appendChild(div);
+        });
+
+        // Show overlay
+        overlay.classList.remove('opacity-0', 'pointer-events-none');
+        overlay.classList.add('opacity-100');
+
+        // 3-second countdown
+        for (let sec = 3; sec > 0; sec--) {
+          timerEl.textContent = `SIMULATING DECISION... ${sec}S`;
+          await AnimationEngine.wait(1000);
+        }
+        timerEl.textContent = 'ANSWER REVEALED!';
+
+        // Highlight correct and dim incorrect
+        choices.forEach((choice, index) => {
+          const letter = ['A', 'B', 'C'][index];
+          const div = document.getElementById(`preview-choice-${index}`);
+          if (div) {
+            if (index === correctIndex) {
+              div.className = 'flex items-center gap-3 px-3 py-2 border-2 border-green-600 rounded-xl text-xs font-black bg-green-50 text-green-800 transition-all duration-300';
+              div.innerHTML = `<span class="font-pixel text-[8px] text-green-600">${letter}</span> <span class="flex-grow">${choice}</span> <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>`;
+            } else {
+              div.className = 'flex items-center gap-3 px-3 py-2 border-2 border-vintage-navy/15 rounded-xl text-xs font-medium bg-white/30 text-vintage-navy/40 opacity-55 transition-all duration-300';
+            }
+          }
+        });
+
+        // Show explanation box
+        expBox.classList.remove('hidden');
+
+        // Play correct selection sound
+        if (typeof playSelectSound === 'function') playSelectSound();
+
+        // Wait 2.5 seconds to let them read the rationale
+        await AnimationEngine.wait(2500);
+
+        // Hide overlay
+        overlay.classList.remove('opacity-100');
+        overlay.classList.add('opacity-0', 'pointer-events-none');
+        await AnimationEngine.wait(300); // Wait for transition
+      } else {
+        // Fallback: wait a moment if overlay elements aren't found
+        await AnimationEngine.wait(1200);
+      }
       
       // 3. Run Correct Action Play
       if (role === 'hitter') {
