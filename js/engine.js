@@ -47,8 +47,8 @@ const AnimationEngine = {
     const svg = document.getElementById('field-svg');
     if (!svg) return;
     const r = svg.getBoundingClientRect();
-    const sx = r.width / 320, sy = r.height / 300;
-    const px = r.left + svgX * sx, py = r.top + svgY * sy;
+    const sx = r.width / 320, sy = r.height / 360;
+    const px = r.left + svgX * sx, py = r.top + (svgY + 60) * sy;
     const colors = ['#f0e040', '#fff', '#c8873a', '#2ecc71', '#e74c3c', '#f5c5a3'];
     for (let i = 0; i < count; i++) {
       const d = document.createElement('div');
@@ -106,24 +106,25 @@ const AnimationEngine = {
     tag.setAttribute('x', String(x));
     tag.setAttribute('y', String(y - 45));
     tag.setAttribute('font-family', "'Press Start 2P', monospace");
-    tag.setAttribute('font-size', '8');
+    tag.setAttribute('font-size', '9.5');
     tag.setAttribute('font-weight', 'bold');
     tag.setAttribute('text-anchor', 'middle');
     tag.setAttribute('fill', color);
     tag.setAttribute('stroke', '#000');
-    tag.setAttribute('stroke-width', '1.5');
+    tag.setAttribute('stroke-width', '2.5');
+    tag.setAttribute('paint-order', 'stroke fill');
     tag.textContent = text;
 
     parent.appendChild(tag);
 
-    const duration = 1000;
+    const duration = 1200;
     const startTime = performance.now();
     const startY = y - 45;
 
     function frame(now) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const currentY = startY - progress * 25;
+      const currentY = startY - progress * 30;
       const opacity = 1 - progress;
 
       tag.setAttribute('y', String(currentY));
@@ -264,12 +265,20 @@ const AnimationEngine = {
     const cuBall = document.getElementById('cu-ball');
     const cuImpact = document.getElementById('cu-impact');
 
-    // Reset positions
+    // Reset positions of all fielders
+    for (const key in POSITION_COORDS) {
+      const info = POSITION_COORDS[key];
+      const el = document.getElementById(info.id);
+      if (el) {
+        const scale = this.getScaleForY(info.y);
+        el.setAttribute('transform', `translate(${info.x},${info.y}) scale(${scale})`);
+        el.setAttribute('opacity', '1');
+      }
+    }
     batGroup.setAttribute('transform', '');
     popflyBall.setAttribute('opacity', '0');
     ballG.setAttribute('opacity', '0');
     pitcherArm.setAttribute('transform', '');
-    pitcherG.setAttribute('transform', `translate(160,152) scale(${PLAYER_SCALE})`);
     pitcherBallHand.setAttribute('opacity', '1');
     playerG.setAttribute('transform', `translate(${BATTER_HOME.x},${BATTER_HOME.y}) scale(${PLAYER_SCALE})`);
     playerG.setAttribute('opacity', '1');
@@ -333,6 +342,15 @@ const AnimationEngine = {
       this.spawnDust(148, 240, 12);
       if (typeof playBatCrack === 'function') playBatCrack();
 
+      const hitLabel = {
+        'grounder': 'GROUNDER',
+        'popup': 'POP FLY',
+        'fly': 'FLY BALL',
+        'liner': 'LINE DRIVE',
+        'bunt': 'BUNT'
+      }[hitPreset.type] || 'HIT';
+      this.showFloatingTag(playerG, hitLabel, '#f0e040');
+
       // Show impact overlay
       if (cuImpact) {
         cuImpact.setAttribute('opacity', '1');
@@ -391,16 +409,24 @@ const AnimationEngine = {
       popflyBall.setAttribute('opacity', '1');
       popflyBall.setAttribute('transform', 'translate(148,248)');
 
-      const ballDuration = 1200;
+      const dx = targetCoords.x - 148;
+      const dy = targetCoords.y - 248;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      let ballDuration = Math.round(dist / 0.16);
+      ballDuration = Math.max(700, Math.min(1300, ballDuration));
+
       this.lastBallPosition = { ...targetCoords };
 
       // Get fielder element
       const fielderId = hitPreset.fielderId || POSITION_COORDS[role]?.id || 'fielder-3b';
       const fielderG = document.getElementById(fielderId);
       
-      let fielderStart = { x: 78, y: 172 };
-      if (POSITION_COORDS[role]) {
-        fielderStart = { x: POSITION_COORDS[role].x, y: POSITION_COORDS[role].y };
+      let fielderStart = { x: 160, y: 152 }; // Safe default (mound)
+      for (const key in POSITION_COORDS) {
+        if (POSITION_COORDS[key].id === fielderId || key === fielderId) {
+          fielderStart = { x: POSITION_COORDS[key].x, y: POSITION_COORDS[key].y };
+          break;
+        }
       }
 
       // Ball path flight
@@ -492,6 +518,15 @@ const AnimationEngine = {
     const playerG = document.getElementById('player');
     const ballG = document.getElementById('ball');
     const popflyBall = document.getElementById('popfly-ball');
+
+    const hitLabel = {
+      'grounder': 'GROUNDER',
+      'popup': 'POP FLY',
+      'fly': 'FLY BALL',
+      'liner': 'LINE DRIVE',
+      'bunt': 'BUNT'
+    }[hitPreset.type] || 'HIT';
+    this.showFloatingTag(playerG, hitLabel, '#f0e040');
     
     const crackText = document.getElementById('crack-text');
     const flashEl = document.getElementById('flash');

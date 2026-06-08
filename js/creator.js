@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Set initial SVG state
   onRoleChanged();
   onRunnersChanged();
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
 });
 
 // Populate hit presets from presets.js
@@ -252,24 +256,35 @@ function loadSavedList() {
   container.innerHTML = '';
   
   if (scenarios.length === 0) {
-    container.innerHTML = '<div style="font-size: 8px; color: #777; text-align: center; padding: 10px;">NO SAVED DRILLS YET.</div>';
+    container.innerHTML = '<div class="text-xs text-vintage-navy/40 text-center py-6 font-medium">No saved custom drills yet.</div>';
     return;
   }
 
   scenarios.forEach(s => {
     const div = document.createElement('div');
-    div.className = 'saved-item';
+    div.className = 'flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-white border border-vintage-navy/10 rounded-lg shadow-sm gap-3 transition hover:shadow-md';
     
     div.innerHTML = `
-      <div class="saved-item-title">${s.title.toUpperCase()}: ${s.situation.toUpperCase()}</div>
-      <div class="saved-item-actions">
-        <button class="saved-btn saved-btn-green" onclick="editScenario('${s.id}')">EDIT</button>
-        <button class="saved-btn saved-btn-red" onclick="deleteScenario('${s.id}')">DELETE</button>
+      <div class="flex flex-col gap-0.5">
+        <span class="font-serif font-bold text-vintage-navy text-sm tracking-wide">${s.title.toUpperCase()}</span>
+        <span class="text-xs text-vintage-navy/60 font-medium">${s.situation.toUpperCase()}</span>
+      </div>
+      <div class="flex items-center gap-2 self-end sm:self-auto">
+        <button class="flex items-center gap-1.5 px-3 py-1.5 bg-vintage-bg hover:bg-vintage-navy text-vintage-navy hover:text-white border border-vintage-navy/20 rounded text-xs font-semibold transition cursor-pointer" onclick="editScenario('${s.id}')">
+          <i data-lucide="edit-2" class="w-3.5 h-3.5"></i> Edit
+        </button>
+        <button class="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-vintage-red text-vintage-red hover:text-white border border-vintage-red/20 rounded text-xs font-semibold transition cursor-pointer" onclick="deleteScenario('${s.id}')">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
+        </button>
       </div>
     `;
     
     container.appendChild(div);
   });
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
 }
 
 // Edit a saved scenario

@@ -8,9 +8,9 @@ const POSITION_COORDS = {
   '2b': { x: 218, y: 108, id: 'fielder-2b' },
   '3b': { x: 78, y: 172, id: 'fielder-3b' },
   'ss': { x: 105, y: 85, id: 'fielder-ss' },
-  'lf': { x: 60, y: 45, id: 'fielder-lf' },
-  'cf': { x: 160, y: 25, id: 'fielder-cf' },
-  'rf': { x: 260, y: 45, id: 'fielder-rf' }
+  'lf': { x: 45, y: 25, id: 'fielder-lf' },
+  'cf': { x: 160, y: -15, id: 'fielder-cf' },
+  'rf': { x: 275, y: 25, id: 'fielder-rf' }
 };
 
 const BASE_COORDS = {
@@ -50,16 +50,16 @@ const HIT_PRESETS = [
   { id: 'popup_3b', name: 'Pop-Up to 3B', type: 'popup', coords: { x: 74, y: 150 }, fielderId: 'fielder-3b', details: 'Pop-up on the left side of the infield!' },
 
   // Fly Balls
-  { id: 'fly_lf', name: 'Fly Ball to LF', type: 'fly', coords: { x: 60, y: 45 }, fielderId: 'fielder-lf', details: 'Fly ball to deep left field!' },
-  { id: 'fly_lcf', name: 'Fly Ball to LCF', type: 'fly', coords: { x: 110, y: 30 }, fielderId: 'fielder-cf', details: 'Fly ball to left-center gap!' },
-  { id: 'fly_cf', name: 'Fly Ball to CF', type: 'fly', coords: { x: 160, y: 25 }, fielderId: 'fielder-cf', details: 'Deep drive to straightaway center field!' },
-  { id: 'fly_rcf', name: 'Fly Ball to RCF', type: 'fly', coords: { x: 210, y: 30 }, fielderId: 'fielder-cf', details: 'Fly ball to right-center gap!' },
-  { id: 'fly_rf', name: 'Fly Ball to RF', type: 'fly', coords: { x: 260, y: 45 }, fielderId: 'fielder-rf', details: 'High fly ball to deep right field!' },
+  { id: 'fly_lf', name: 'Fly Ball to LF', type: 'fly', coords: { x: 45, y: 25 }, fielderId: 'fielder-lf', details: 'Fly ball to deep left field!' },
+  { id: 'fly_lcf', name: 'Fly Ball to LCF', type: 'fly', coords: { x: 110, y: -5 }, fielderId: 'fielder-cf', details: 'Fly ball to left-center gap!' },
+  { id: 'fly_cf', name: 'Fly Ball to CF', type: 'fly', coords: { x: 160, y: -15 }, fielderId: 'fielder-cf', details: 'Deep drive to straightaway center field!' },
+  { id: 'fly_rcf', name: 'Fly Ball to RCF', type: 'fly', coords: { x: 210, y: -5 }, fielderId: 'fielder-cf', details: 'Fly ball to right-center gap!' },
+  { id: 'fly_rf', name: 'Fly Ball to RF', type: 'fly', coords: { x: 275, y: 25 }, fielderId: 'fielder-rf', details: 'High fly ball to deep right field!' },
 
   // Line Drives
-  { id: 'liner_lf', name: 'Line Drive to LF', type: 'liner', coords: { x: 60, y: 45 }, fielderId: 'fielder-lf', details: 'Line drive single to left field!' },
-  { id: 'liner_cf', name: 'Line Drive to CF', type: 'liner', coords: { x: 160, y: 25 }, fielderId: 'fielder-cf', details: 'Rope to center field!' },
-  { id: 'liner_rf', name: 'Line Drive to RF', type: 'liner', coords: { x: 260, y: 45 }, fielderId: 'fielder-rf', details: 'Liner to right field!' },
+  { id: 'liner_lf', name: 'Line Drive to LF', type: 'liner', coords: { x: 45, y: 25 }, fielderId: 'fielder-lf', details: 'Line drive single to left field!' },
+  { id: 'liner_cf', name: 'Line Drive to CF', type: 'liner', coords: { x: 160, y: -15 }, fielderId: 'fielder-cf', details: 'Rope to center field!' },
+  { id: 'liner_rf', name: 'Line Drive to RF', type: 'liner', coords: { x: 275, y: 25 }, fielderId: 'fielder-rf', details: 'Liner to right field!' },
   { id: 'liner_mid', name: 'Line Drive up Middle', type: 'liner', coords: { x: 160, y: 108 }, fielderId: 'fielder-2b', details: 'Liner right past the pitcher\'s head!' },
 
   // Bunts

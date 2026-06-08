@@ -4,497 +4,675 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BatterPlay Scenario Creator</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Cinzel:wght@600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            vintage: {
+              bg: '#F5F2EB', // Cream background
+              navy: '#1D3549', // Deep vintage navy blue
+              red: '#D14128', // Warm vintage red
+              orange: '#E67E22', // Vintage orange
+              green: '#1E8A36', // Infield/outfield green
+              sand: '#D08840', // Basepaths dirt
+            }
+          },
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            serif: ['Cinzel', 'serif'],
+            pixel: ['"Press Start 2P"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
 
-  <div class="creator-container">
+  <!-- Custom CSS for SVG pixel rendering, status blink, and pixel dust -->
+  <style type="text/tailwindcss">
+    .status-dot {
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink {
+      50% { opacity: 0 }
+    }
     
-    <!-- LEFT SIDE: Live Field Preview -->
-    <div class="creator-left">
-      <div style="align-self: flex-start; display: flex; justify-content: space-between; width: 100%; margin-bottom: 14px;">
-        <button class="btn-pixel btn-green" onclick="window.location.href='index.html'" style="width: auto; padding: 8px 12px; font-size: 8px; box-shadow: 2px 2px 0 #145a23;">⬅️ HOME</button>
-        <div class="title" style="margin: 0; font-size: 11px;">PREVIEW</div>
-      </div>
-      
-      <div class="status-bar">
-        <div class="status-dot"></div>
-        <div id="status-text" class="status-text">SETUP A DRILL ON THE RIGHT AND CLICK PREVIEW PLAY</div>
-      </div>
-      
-      <div class="field-wrap">
-        <svg id="field-svg" viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg">
-          <!-- OUTFIELD GRASS -->
-          <rect x="0" y="0" width="320" height="300" fill="#1a7a30" />
-          <rect x="0" y="0" width="320" height="20" fill="#1d8535" />
-          <rect x="0" y="40" width="320" height="20" fill="#1d8535" />
-          <rect x="0" y="80" width="320" height="20" fill="#1d8535" />
-          <rect x="0" y="120" width="320" height="20" fill="#1d8535" />
-          <rect x="0" y="160" width="320" height="20" fill="#1d8535" />
-          <rect x="0" y="200" width="320" height="20" fill="#1d8535" />
-          <rect x="0" y="240" width="320" height="20" fill="#1d8535" />
-          <rect x="0" y="280" width="320" height="20" fill="#1d8535" />
-          
-          <!-- INFIELD GRASS -->
-          <polygon points="160,58 262,160 160,262 58,160" fill="#1e8a36" />
-          <polygon points="160,68 252,160 160,252 68,160" fill="#218f3a" />
-          <polygon points="160,80 242,160 160,242 78,160" fill="#1e8a36" />
-          <polygon points="160,94 230,160 160,228 90,160" fill="#218f3a" />
-          <polygon points="160,108 218,160 160,214 102,160" fill="#1e8a36" />
-          <polygon points="160,122 206,160 160,200 114,160" fill="#218f3a" />
-          <polygon points="160,136 194,160 160,186 126,160" fill="#1e8a36" />
+    .pixel-dust {
+      position: fixed;
+      width: 4px;
+      height: 4px;
+      pointer-events: none;
+      z-index: 1000;
+      animation: dustfly 0.55s ease-out forwards;
+    }
+    @keyframes dustfly {
+      0% { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+    }
 
-          <!-- SAND/DIRT RUNNING TRACKS -->
-          <ellipse cx="160" cy="266" rx="42" ry="28" fill="#c47c35" />
-          <ellipse cx="160" cy="266" rx="36" ry="22" fill="#d08840" />
-          <ellipse cx="262" cy="160" rx="24" ry="16" fill="#c47c35" />
-          <ellipse cx="262" cy="160" rx="18" ry="12" fill="#d08840" />
-          <ellipse cx="160" cy="58" rx="24" ry="16" fill="#c47c35" />
-          <ellipse cx="160" cy="58" rx="18" ry="12" fill="#d08840" />
-          <ellipse cx="58" cy="160" rx="24" ry="16" fill="#c47c35" />
-          <ellipse cx="58" cy="160" rx="18" ry="12" fill="#d08840" />
+    #field-svg {
+      image-rendering: pixelated;
+    }
 
-          <path d="M 160,266 L 262,160 L 160,58 L 58,160 Z" fill="none" stroke="#c47c35" stroke-width="20" stroke-linejoin="round" />
-          <path d="M 160,266 L 262,160 L 160,58 L 58,160 Z" fill="none" stroke="#d08840" stroke-width="14" stroke-linejoin="round" />
+    @keyframes you-glow-pulse {
+      0%, 100% {
+        opacity: 0.35;
+        stroke: #f0e040;
+        filter: drop-shadow(0 0 1px rgba(240, 224, 64, 0.4));
+      }
+      50% {
+        opacity: 1;
+        stroke: #ffffff;
+        filter: drop-shadow(0 0 6px rgba(240, 224, 64, 0.8));
+      }
+    }
+    @keyframes you-text-bob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    
+    .you-glow {
+      animation: you-glow-pulse 1.4s infinite ease-in-out;
+    }
+    .you-text {
+      animation: you-text-bob 1.4s infinite ease-in-out;
+      paint-order: stroke fill;
+    }
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1ebd9;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1D3549;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #D14128;
+    }
+  </style>
+</head>
+<body class="bg-vintage-bg text-vintage-navy font-sans min-height-screen">
 
-          <line x1="262" y1="160" x2="320" y2="106" stroke="#c47c35" stroke-width="20" stroke-linecap="round" />
-          <line x1="262" y1="160" x2="320" y2="106" stroke="#d08840" stroke-width="14" stroke-linecap="round" />
-          <line x1="58" y1="160" x2="0" y2="106" stroke="#c47c35" stroke-width="20" stroke-linecap="round" />
-          <line x1="58" y1="160" x2="0" y2="106" stroke="#d08840" stroke-width="14" stroke-linecap="round" />
-
-          <line x1="160" y1="266" x2="0" y2="106" stroke="white" stroke-width="2.5" opacity="0.7" />
-          <line x1="160" y1="266" x2="320" y2="106" stroke="white" stroke-width="2.5" opacity="0.7" />
-          <line x1="160" y1="266" x2="262" y2="160" stroke="white" stroke-width="2" opacity="0.55" stroke-dasharray="5,4" />
-          <line x1="262" y1="160" x2="160" y2="58" stroke="white" stroke-width="2" opacity="0.55" stroke-dasharray="5,4" />
-          <line x1="160" y1="58" x2="58" y2="160" stroke="white" stroke-width="2" opacity="0.55" stroke-dasharray="5,4" />
-          <line x1="58" y1="160" x2="160" y2="266" stroke="white" stroke-width="2" opacity="0.55" stroke-dasharray="5,4" />
-
-          <ellipse cx="160" cy="162" rx="20" ry="14" fill="#bf7428" />
-          <ellipse cx="160" cy="162" rx="15" ry="10" fill="#c98040" />
-          <rect x="154" y="159" width="12" height="6" rx="1" fill="white" />
-
-          <rect x="137" y="254" width="14" height="22" rx="1" fill="none" stroke="white" stroke-width="1.5" opacity="0.6" />
-          <rect x="169" y="254" width="14" height="22" rx="1" fill="none" stroke="white" stroke-width="1.5" opacity="0.6" />
-
-          <!-- BASES -->
-          <polygon id="base-home" points="148,256 172,256 172,268 160,276 148,268" fill="white" stroke="#ccc" stroke-width="1" />
-          <rect id="base-1b" x="254" y="152" width="16" height="16" rx="1" fill="white" stroke="#ddd" stroke-width="1" transform="rotate(45 262 160)" />
-          <rect id="base-2b" x="152" y="50" width="16" height="16" rx="1" fill="white" stroke="#ddd" stroke-width="1" transform="rotate(45 160 58)" />
-          <rect id="base-3b" x="50" y="152" width="16" height="16" rx="1" fill="white" stroke="#ddd" stroke-width="1" transform="rotate(45 58 160)" />
-          
-          <polygon id="hi-home" points="148,256 172,256 172,268 160,276 148,268" fill="#e74c3c" opacity="0" />
-          <rect id="hi-1b" x="254" y="152" width="16" height="16" rx="1" fill="#27ae60" opacity="0" transform="rotate(45 262 160)" />
-          <rect id="hi-2b" x="152" y="50" width="16" height="16" rx="1" fill="#2980b9" opacity="0" transform="rotate(45 160 58)" />
-          <rect id="hi-3b" x="50" y="152" width="16" height="16" rx="1" fill="#e67e22" opacity="0" transform="rotate(45 58 160)" />
-
-          <text x="280" y="156" font-family="'Courier New',monospace" font-size="8" font-weight="bold" fill="#27ae60">1B</text>
-          <text x="152" y="42" font-family="'Courier New',monospace" font-size="8" font-weight="bold" fill="#2980b9">2B</text>
-          <text x="26" y="156" font-family="'Courier New',monospace" font-size="8" font-weight="bold" fill="#e67e22">3B</text>
-          <text x="147" y="295" font-family="'Courier New',monospace" font-size="7" font-weight="bold" fill="#e74c3c">HOME</text>
-
-          <!-- BALL -->
-          <g id="ball" transform="translate(160,155)" opacity="0">
-            <circle cx="0" cy="0" r="4" fill="white" stroke="#ddd" stroke-width="0.5" />
-            <path d="M -1,-3 Q 1,-2 1,0 Q 1,2 -1,3" fill="none" stroke="#cc3333" stroke-width="0.8" />
-            <path d="M 1,-3 Q -1,-2 -1,0 Q -1,2 1,3" fill="none" stroke="#cc3333" stroke-width="0.8" />
-          </g>
-
-          <g id="popfly-ball" transform="translate(160,248)" opacity="0">
-            <circle cx="0" cy="0" r="4" fill="white" stroke="#ddd" stroke-width="0.5" />
-            <path d="M -1,-3 Q 1,-2 1,0 Q 1,2 -1,3" fill="none" stroke="#cc3333" stroke-width="0.8" />
-            <path d="M 1,-3 Q -1,-2 -1,0 Q -1,2 1,3" fill="none" stroke="#cc3333" stroke-width="0.8" />
-          </g>
-
-          <!-- DEFENSIVE PLAYERS -->
-          <!-- Shortstop -->
-          <g id="fielder-ss" transform="translate(105,85) scale(0.75)">
-            <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
-            <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="-8" y="-15" width="16" height="3" fill="#222" />
-            <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
-            <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
-            <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
-            <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
-            <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
-            <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
-            <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
-            <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
-            <rect x="-11" y="-44" width="22" height="4" rx="1" fill="#e67e22" /><rect x="-7" y="-55" width="14" height="13" rx="2" fill="#e67e22" /><rect x="-2" y="-57" width="4" height="3" rx="1" fill="#e67e22" /><rect x="-3" y="-52" width="6" height="7" rx="1" fill="#ffffff" />
-          </g>
-
-          <!-- Second Baseman -->
-          <g id="fielder-2b" transform="translate(218,108) scale(0.75)">
-            <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
-            <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="-8" y="-15" width="16" height="3" fill="#222" />
-            <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
-            <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
-            <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
-            <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
-            <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
-            <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
-            <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
-            <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
-            <rect x="-11" y="-44" width="22" height="4" rx="1" fill="#e67e22" /><rect x="-7" y="-55" width="14" height="13" rx="2" fill="#e67e22" /><rect x="-2" y="-57" width="4" height="3" rx="1" fill="#e67e22" /><rect x="-3" y="-52" width="6" height="7" rx="1" fill="#ffffff" />
-          </g>
-
-          <!-- Pitcher -->
-          <g id="pitcher" transform="translate(160,152) scale(0.75)">
-            <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
-            <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="-8" y="-15" width="16" height="3" fill="#222" />
-            <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
-            <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
-            <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
-            <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
-            <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
-            <g id="pitcher-arm">
-              <rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" />
-              <rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" />
-              <circle id="pitcher-ball-hand" cx="12" cy="-17" r="3.5" fill="white" stroke="#ddd" stroke-width="0.5" />
-            </g>
-            <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
-            <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
-            <rect x="-11" y="-44" width="22" height="4" rx="1" fill="#e67e22" /><rect x="-7" y="-55" width="14" height="13" rx="2" fill="#e67e22" /><rect x="-2" y="-57" width="4" height="3" rx="1" fill="#e67e22" /><rect x="-3" y="-52" width="6" height="7" rx="1" fill="#ffffff" />
-          </g>
-
-          <!-- 1st Baseman -->
-          <g id="fielder-1b" transform="translate(240,172) scale(0.75)">
-            <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
-            <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="-8" y="-15" width="16" height="3" fill="#222" />
-            <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
-            <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
-            <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
-            <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
-            <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
-            <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
-            <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
-            <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
-            <rect x="-11" y="-44" width="22" height="4" rx="1" fill="#e67e22" /><rect x="-7" y="-55" width="14" height="13" rx="2" fill="#e67e22" /><rect x="-2" y="-57" width="4" height="3" rx="1" fill="#e67e22" /><rect x="-3" y="-52" width="6" height="7" rx="1" fill="#ffffff" />
-          </g>
-
-          <!-- 3rd Baseman -->
-          <g id="fielder-3b" transform="translate(78,172) scale(0.75)">
-            <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
-            <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="-8" y="-15" width="16" height="3" fill="#222" />
-            <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
-            <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
-            <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
-            <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
-            <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
-            <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
-            <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
-            <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
-            <rect x="-11" y="-44" width="22" height="4" rx="1" fill="#e67e22" /><rect x="-7" y="-55" width="14" height="13" rx="2" fill="#e67e22" /><rect x="-2" y="-57" width="4" height="3" rx="1" fill="#e67e22" /><rect x="-3" y="-52" width="6" height="7" rx="1" fill="#ffffff" />
-          </g>
-
-          <!-- Left Fielder -->
-          <g id="fielder-lf" transform="translate(60,45) scale(0.65)">
-            <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
-            <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="-8" y="-15" width="16" height="3" fill="#222" />
-            <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
-            <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
-            <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
-            <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
-            <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
-            <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
-            <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
-            <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
-            <rect x="-11" y="-44" width="22" height="4" rx="1" fill="#e67e22" /><rect x="-7" y="-55" width="14" height="13" rx="2" fill="#e67e22" /><rect x="-2" y="-57" width="4" height="3" rx="1" fill="#e67e22" /><rect x="-3" y="-52" width="6" height="7" rx="1" fill="#ffffff" />
-          </g>
-
-          <!-- Center Fielder -->
-          <g id="fielder-cf" transform="translate(160,25) scale(0.65)">
-            <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
-            <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="-8" y="-15" width="16" height="3" fill="#222" />
-            <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
-            <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
-            <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
-            <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
-            <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
-            <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
-            <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
-            <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
-            <rect x="-11" y="-44" width="22" height="4" rx="1" fill="#e67e22" /><rect x="-7" y="-55" width="14" height="13" rx="2" fill="#e67e22" /><rect x="-2" y="-57" width="4" height="3" rx="1" fill="#e67e22" /><rect x="-3" y="-52" width="6" height="7" rx="1" fill="#ffffff" />
-          </g>
-
-          <!-- Right Fielder -->
-          <g id="fielder-rf" transform="translate(260,45) scale(0.65)">
-            <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
-            <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
-            <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
-            <rect x="-8" y="-15" width="16" height="3" fill="#222" />
-            <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
-            <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
-            <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
-            <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
-            <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
-            <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
-            <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
-            <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
-            <rect x="-11" y="-44" width="22" height="4" rx="1" fill="#e67e22" /><rect x="-7" y="-55" width="14" height="13" rx="2" fill="#e67e22" /><rect x="-2" y="-57" width="4" height="3" rx="1" fill="#e67e22" /><rect x="-3" y="-52" width="6" height="7" rx="1" fill="#ffffff" />
-          </g>
-
-          <!-- Batter -->
-          <g id="player" transform="translate(148,258) scale(0.75)">
-            <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.35)" />
-            <rect x="-8" y="-3" width="6" height="4" rx="1" fill="#111" />
-            <rect x="2" y="-3" width="6" height="4" rx="1" fill="#111" />
-            <rect x="-8" y="-13" width="6" height="11" fill="#f0f0f0" />
-            <rect x="2" y="-13" width="6" height="11" fill="#f0f0f0" />
-            <rect x="-8" y="-10" width="6" height="3" fill="#d00020" />
-            <rect x="2" y="-10" width="6" height="3" fill="#d00020" />
-            <rect x="-9" y="-15" width="18" height="3" fill="#222" />
-            <rect x="-9" y="-28" width="18" height="14" fill="#f0f0f0" />
-            <rect x="-9" y="-22" width="18" height="3" fill="#d00020" />
-            <rect x="-13" y="-28" width="5" height="6" rx="1" fill="#f0f0f0" />
-            <rect x="8" y="-28" width="5" height="6" rx="1" fill="#f0f0f0" />
-            <g id="bat-group">
-              <rect x="6" y="-44" width="4" height="28" rx="2" fill="#8B4513" transform="rotate(-30, 8, -24)" />
-              <rect x="5" y="-45" width="6" height="4" rx="2" fill="#6B3010" transform="rotate(-30, 8, -24)" />
-              <rect x="6" y="-38" width="4" height="6" rx="1" fill="#a05020" transform="rotate(-30, 8, -24)" />
-            </g>
-            <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" />
-            <rect x="-9" y="-43" width="18" height="13" rx="2" fill="#f5c5a3" />
-            <rect x="-11" y="-44" width="22" height="4" rx="1" fill="#0a1a5c" />
-            <rect x="-8" y="-56" width="16" height="14" rx="2" fill="#0a1a5c" />
-            <rect x="-11" y="-44" width="4" height="8" rx="1" fill="#0a1a5c" />
-            <rect x="-2" y="-58" width="4" height="3" rx="1" fill="#0a1a5c" />
-            <rect x="-3" y="-52" width="6" height="7" rx="1" fill="#cc0000" />
-            <rect x="-4" y="-38" width="3" height="3" fill="#222" />
-            <rect x="1" y="-38" width="3" height="3" fill="#222" />
-            <rect x="-2" y="-33" width="4" height="1" fill="#b09070" />
-          </g>
-
-          <!-- Catcher -->
-          <g id="catcher" transform="translate(160,282) scale(0.75)">
-            <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.35)" />
-            <rect x="-11" y="-8" width="7" height="6" rx="1" fill="#2c3e50" />
-            <rect x="4" y="-8" width="7" height="6" rx="1" fill="#2c3e50" />
-            <rect x="-11" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="6" y="-3" width="5" height="4" rx="1" fill="#111" />
-            <rect x="-10" y="-8" width="5" height="5" fill="#e67e22" />
-            <rect x="5" y="-8" width="5" height="5" fill="#e67e22" />
-            <rect x="-8" y="-20" width="16" height="13" fill="#2c3e50" />
-            <rect x="-8" y="-10" width="16" height="3" fill="#222" />
-            <rect x="-9" y="-19" width="18" height="10" fill="#e67e22" rx="1" />
-            <rect x="-7" y="-18" width="14" height="8" fill="none" stroke="#111" stroke-width="0.8" />
-            <line x1="-9" y1="-14" x2="9" y2="-14" stroke="#111" stroke-width="0.8" />
-            <rect x="-11" y="-18" width="4" height="6" rx="1" fill="#2c3e50" />
-            <ellipse cx="-12" cy="-14" rx="5" ry="4.5" fill="#7a3810" />
-            <ellipse cx="-12" cy="-14" rx="3" ry="2.5" fill="#9a4c20" />
-            <rect x="7" y="-18" width="4" height="6" rx="1" fill="#2c3e50" />
-            <rect x="8" y="-13" width="3" height="5" rx="1" fill="#f5c5a3" />
-            <rect x="-3" y="-23" width="6" height="4" fill="#f5c5a3" />
-            <rect x="-8" y="-33" width="16" height="11" rx="2" fill="#f5c5a3" />
-            <rect x="-7" y="-32" width="14" height="10" fill="#333" rx="1" />
-            <line x1="-5" y1="-29" x2="5" y2="-29" stroke="#888" stroke-width="0.8" />
-            <line x1="-5" y1="-26" x2="5" y2="-26" stroke="#888" stroke-width="0.8" />
-            <line x1="-3" y1="-31" x2="-3" y2="-23" stroke="#888" stroke-width="0.8" />
-            <line x1="3" y1="-31" x2="3" y2="-23" stroke="#888" stroke-width="0.8" />
-            <rect x="-9" y="-34" width="18" height="4" rx="1" fill="#e67e22" />
-            <rect x="-7" y="-42" width="14" height="9" rx="2" fill="#e67e22" />
-          </g>
-
-          <!-- DYNAMIC YOU INDICATORS (Glow + Text) -->
-          <!-- We place them as root defs and attach them in js -->
-          <defs>
-            <ellipse id="you-glow" cx="0" cy="2" rx="15" ry="5.5" fill="none" stroke="#f0e040" stroke-width="1.8" opacity="0" pointer-events="none" class="you-glow" />
-            <text id="you-text" x="0" y="-68" font-family="'Press Start 2P', monospace" font-size="7.5" font-weight="bold" fill="#f0e040" text-anchor="middle" opacity="0" stroke="#000" stroke-width="1.5" class="you-text">YOU</text>
-          </defs>
-        </svg>
-      </div>
-
-      <button id="preview-btn" class="btn-pixel btn-blue" onclick="previewPlay()" style="margin-bottom: 20px;">▶ PREVIEW PLAY</button>
-    </div>
-
-    <!-- RIGHT SIDE: Scenario Form -->
-    <div class="creator-right">
-      <h2 class="title" style="font-size: 16px; margin-bottom: 20px; text-align: left;">SCENARIO CREATOR</h2>
-
-      <form id="scenario-form" onsubmit="event.preventDefault();">
-        <input type="hidden" id="scenario-id">
-        
-        <!-- SECTION 1: Scenario Text -->
-        <div class="form-section">
-          <div class="section-title">1️⃣ SCENARIO TEXT</div>
-          <div class="form-group">
-            <label for="scenario-title">SCENARIO TITLE</label>
-            <input type="text" id="scenario-title" class="form-control" placeholder="e.g., Drill 001" required>
-          </div>
-          <div class="form-group">
-            <label for="scenario-situation">SITUATION SUMMARY</label>
-            <input type="text" id="scenario-situation" class="form-control" placeholder="e.g., Runner on 2nd, 1 Out" required>
-          </div>
-          <div class="form-group">
-            <label for="scenario-details">DETAILS / INSTRUCTIONS</label>
-            <textarea id="scenario-details" class="form-control" placeholder="Write instructions for the player..." required></textarea>
-          </div>
+  <!-- Header -->
+  <header class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
+    <div class="flex flex-col sm:flex-row items-center justify-between border-b border-vintage-navy/10 pb-6 gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-vintage-navy p-2.5 rounded-xl text-vintage-bg shadow-sm">
+          <i data-lucide="shield" class="w-7 h-7 text-vintage-red"></i>
         </div>
+        <div class="text-left">
+          <h1 class="font-serif font-black text-2xl tracking-wider text-vintage-navy uppercase">Yard Drill Creator</h1>
+          <p class="text-xs font-medium text-vintage-navy/60 tracking-wider">BATTERPLAY CUSTOM SCENARIO BUILDER</p>
+        </div>
+      </div>
+      <button onclick="window.location.href='index.html'" class="flex items-center gap-2 px-4 py-2 bg-white text-vintage-navy hover:bg-vintage-navy hover:text-white border border-vintage-navy/20 rounded-lg text-xs font-bold tracking-wider uppercase transition cursor-pointer shadow-sm active:translate-y-px">
+        <i data-lucide="home" class="w-4 h-4"></i> Back to Game
+      </button>
+    </div>
+  </header>
 
-        <!-- SECTION 2: Field Setup -->
-        <div class="form-section">
-          <div class="section-title">2️⃣ FIELD SETUP</div>
-          <div class="form-group">
-            <label for="scenario-role">YOUR ROLE (PLAYER POSITION)</label>
-            <select id="scenario-role" class="form-control" onchange="onRoleChanged()">
-              <option value="hitter">🧤 HITTER</option>
-              <option value="pitcher">🥎 PITCHER</option>
-              <option value="catcher">🧤 CATCHER</option>
-              <option value="1b">🧤 1ST BASE</option>
-              <option value="2b">🧤 2ND BASE</option>
-              <option value="3b" selected>🧤 3RD BASE</option>
-              <option value="ss">🧤 SHORTSTOP</option>
-              <option value="lf">🧤 LEFT FIELD</option>
-              <option value="cf">🧤 CENTER FIELD</option>
-              <option value="rf">🧤 RIGHT FIELD</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>BASE RUNNERS</label>
-            <div class="checkbox-group">
-              <label class="checkbox-label">
-                <input type="checkbox" id="runner-1b-check" value="1b" onchange="onRunnersChanged()">
-                <span class="checkbox-custom"></span> 1ST BASE
-              </label>
-              <label class="checkbox-label">
-                <input type="checkbox" id="runner-2b-check" value="2b" onchange="onRunnersChanged()">
-                <span class="checkbox-custom"></span> 2ND BASE
-              </label>
-              <label class="checkbox-label">
-                <input type="checkbox" id="runner-3b-check" value="3b" onchange="onRunnersChanged()">
-                <span class="checkbox-custom"></span> 3RD BASE
-              </label>
+  <!-- Main Grid Layout -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 pt-4">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- LEFT SIDE: Scenario Form & List (Menu) -->
+      <div class="lg:col-span-7 space-y-6">
+        
+        <form id="scenario-form" onsubmit="event.preventDefault();" class="space-y-6">
+          <input type="hidden" id="scenario-id">
+          
+          <!-- SECTION 1: Scenario Text -->
+          <div class="bg-white border border-vintage-navy/10 rounded-2xl p-6 shadow-sm hover:shadow-md transition space-y-4">
+            <h2 class="text-xs font-bold text-vintage-navy tracking-wider uppercase border-b border-vintage-navy/10 pb-2 flex items-center gap-2">
+              <i data-lucide="file-text" class="w-4 h-4 text-vintage-red"></i> 1. Drill Information
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1.5">
+                <label for="scenario-title" class="block text-[10px] font-bold text-vintage-navy/80 uppercase tracking-wider">Drill Title</label>
+                <input type="text" id="scenario-title" class="w-full px-3 py-2 bg-vintage-bg/40 border border-vintage-navy/15 focus:border-vintage-navy focus:bg-white rounded-lg text-sm text-vintage-navy placeholder-vintage-navy/30 outline-none transition focus:ring-2 focus:ring-vintage-navy/5 font-sans" placeholder="e.g., Drill 001" required>
+              </div>
+              <div class="space-y-1.5">
+                <label for="scenario-situation" class="block text-[10px] font-bold text-vintage-navy/80 uppercase tracking-wider">Situation Summary</label>
+                <input type="text" id="scenario-situation" class="w-full px-3 py-2 bg-vintage-bg/40 border border-vintage-navy/15 focus:border-vintage-navy focus:bg-white rounded-lg text-sm text-vintage-navy placeholder-vintage-navy/30 outline-none transition focus:ring-2 focus:ring-vintage-navy/5 font-sans" placeholder="e.g., Runner on 2nd, 1 Out" required>
+              </div>
+            </div>
+            <div class="space-y-1.5">
+              <label for="scenario-details" class="block text-[10px] font-bold text-vintage-navy/80 uppercase tracking-wider">Details & Instructions</label>
+              <textarea id="scenario-details" class="w-full min-h-[70px] px-3 py-2 bg-vintage-bg/40 border border-vintage-navy/15 focus:border-vintage-navy focus:bg-white rounded-lg text-sm text-vintage-navy placeholder-vintage-navy/30 outline-none transition focus:ring-2 focus:ring-vintage-navy/5 font-sans resize-y" placeholder="Explain the situation and what the player is expected to do..." required></textarea>
             </div>
           </div>
+
+          <!-- SECTION 2: Field Setup -->
+          <div class="bg-white border border-vintage-navy/10 rounded-2xl p-6 shadow-sm hover:shadow-md transition space-y-4">
+            <h2 class="text-xs font-bold text-vintage-navy tracking-wider uppercase border-b border-vintage-navy/10 pb-2 flex items-center gap-2">
+              <i data-lucide="users" class="w-4 h-4 text-vintage-red"></i> 2. Field Setup
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1.5">
+                <label for="scenario-role" class="block text-[10px] font-bold text-vintage-navy/80 uppercase tracking-wider">Your Position</label>
+                <select id="scenario-role" class="w-full px-3 py-2 bg-vintage-bg/40 border border-vintage-navy/15 focus:border-vintage-navy focus:bg-white rounded-lg text-sm text-vintage-navy outline-none transition focus:ring-2 focus:ring-vintage-navy/5 cursor-pointer font-sans" onchange="onRoleChanged()">
+                  <option value="hitter">🥎 Hitter</option>
+                  <option value="pitcher">🥎 Pitcher</option>
+                  <option value="catcher">🧤 Catcher</option>
+                  <option value="1b">🧤 1st Base</option>
+                  <option value="2b">🧤 2nd Base</option>
+                  <option value="3b" selected>🧤 3rd Base</option>
+                  <option value="ss">🧤 Shortstop</option>
+                  <option value="lf">🧤 Left Field</option>
+                  <option value="cf">🧤 Center Field</option>
+                  <option value="rf">🧤 Right Field</option>
+                </select>
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-vintage-navy/80 uppercase tracking-wider">Base Runners</label>
+                <div class="flex gap-2 flex-wrap pt-0.5">
+                  <label class="flex items-center gap-2 px-3 py-1.5 bg-vintage-bg/60 border border-vintage-navy/15 rounded-lg text-xs font-semibold text-vintage-navy cursor-pointer hover:bg-vintage-bg transition select-none">
+                    <input type="checkbox" id="runner-1b-check" value="1b" onchange="onRunnersChanged()" class="w-4 h-4 rounded text-vintage-red focus:ring-vintage-red accent-vintage-red cursor-pointer">
+                    1st
+                  </label>
+                  <label class="flex items-center gap-2 px-3 py-1.5 bg-vintage-bg/60 border border-vintage-navy/15 rounded-lg text-xs font-semibold text-vintage-navy cursor-pointer hover:bg-vintage-bg transition select-none">
+                    <input type="checkbox" id="runner-2b-check" value="2b" onchange="onRunnersChanged()" class="w-4 h-4 rounded text-vintage-red focus:ring-vintage-red accent-vintage-red cursor-pointer">
+                    2nd
+                  </label>
+                  <label class="flex items-center gap-2 px-3 py-1.5 bg-vintage-bg/60 border border-vintage-navy/15 rounded-lg text-xs font-semibold text-vintage-navy cursor-pointer hover:bg-vintage-bg transition select-none">
+                    <input type="checkbox" id="runner-3b-check" value="3b" onchange="onRunnersChanged()" class="w-4 h-4 rounded text-vintage-red focus:ring-vintage-red accent-vintage-red cursor-pointer">
+                    3rd
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 3: Hit Type -->
+          <div class="bg-white border border-vintage-navy/10 rounded-2xl p-6 shadow-sm hover:shadow-md transition space-y-4">
+            <h2 class="text-xs font-bold text-vintage-navy tracking-wider uppercase border-b border-vintage-navy/10 pb-2 flex items-center gap-2">
+              <i data-lucide="send" class="w-4 h-4 text-vintage-red"></i> 3. The Hit (Pre-Decision)
+            </h2>
+            <div class="space-y-1.5">
+              <label for="scenario-hit-preset" class="block text-[10px] font-bold text-vintage-navy/80 uppercase tracking-wider">Ball Flight / Hit Path</label>
+              <select id="scenario-hit-preset" class="w-full px-3 py-2 bg-vintage-bg/40 border border-vintage-navy/15 focus:border-vintage-navy focus:bg-white rounded-lg text-sm text-vintage-navy outline-none transition focus:ring-2 focus:ring-vintage-navy/5 cursor-pointer font-sans">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+          </div>
+
+          <!-- SECTION 4: Quiz Question -->
+          <div class="bg-white border border-vintage-navy/10 rounded-2xl p-6 shadow-sm hover:shadow-md transition space-y-4">
+            <h2 class="text-xs font-bold text-vintage-navy tracking-wider uppercase border-b border-vintage-navy/10 pb-2 flex items-center gap-2">
+              <i data-lucide="help-circle" class="w-4 h-4 text-vintage-red"></i> 4. Quiz Question & Choices
+            </h2>
+            <div class="space-y-1.5">
+              <label for="scenario-question" class="block text-[10px] font-bold text-vintage-navy/80 uppercase tracking-wider">Question text</label>
+              <input type="text" id="scenario-question" class="w-full px-3 py-2 bg-vintage-bg/40 border border-vintage-navy/15 focus:border-vintage-navy focus:bg-white rounded-lg text-sm text-vintage-navy placeholder-vintage-navy/30 outline-none transition focus:ring-2 focus:ring-vintage-navy/5 font-sans" placeholder="e.g., Where should you throw the ball?" required>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="space-y-1.5">
+                <label for="scenario-choice-0" class="block text-[10px] font-bold text-vintage-navy/80 uppercase tracking-wider">Choice A</label>
+                <input type="text" id="scenario-choice-0" class="w-full px-3 py-2 bg-vintage-bg/40 border border-vintage-navy/15 focus:border-vintage-navy focus:bg-white rounded-lg text-xs text-vintage-navy placeholder-vintage-navy/30 outline-none transition focus:ring-2 focus:ring-vintage-navy/5 font-sans" placeholder="e.g., Throw to 1st Base" required>
+              </div>
+              <div class="space-y-1.5">
+                <label for="scenario-choice-1" class="block text-[10px] font-bold text-vintage-navy/80 uppercase tracking-wider">Choice B</label>
+                <input type="text" id="scenario-choice-1" class="w-full px-3 py-2 bg-vintage-bg/40 border border-vintage-navy/15 focus:border-vintage-navy focus:bg-white rounded-lg text-xs text-vintage-navy placeholder-vintage-navy/30 outline-none transition focus:ring-2 focus:ring-vintage-navy/5 font-sans" placeholder="e.g., Throw to Home" required>
+              </div>
+              <div class="space-y-1.5">
+                <label for="scenario-choice-2" class="block text-[10px] font-bold text-vintage-navy/80 uppercase tracking-wider">Choice C</label>
+                <input type="text" id="scenario-choice-2" class="w-full px-3 py-2 bg-vintage-bg/40 border border-vintage-navy/15 focus:border-vintage-navy focus:bg-white rounded-lg text-xs text-vintage-navy placeholder-vintage-navy/30 outline-none transition focus:ring-2 focus:ring-vintage-navy/5 font-sans" placeholder="e.g., Run to 3B tag" required>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+              <div class="sm:col-span-1 space-y-1.5">
+                <label for="scenario-correct" class="block text-[10px] font-bold text-vintage-navy/80 uppercase tracking-wider">Correct Option</label>
+                <select id="scenario-correct" class="w-full px-3 py-2 bg-vintage-bg/40 border border-vintage-navy/15 focus:border-vintage-navy focus:bg-white rounded-lg text-sm text-vintage-navy outline-none transition focus:ring-2 focus:ring-vintage-navy/5 cursor-pointer font-sans">
+                  <option value="0">Choice A</option>
+                  <option value="1">Choice B</option>
+                  <option value="2">Choice C</option>
+                </select>
+              </div>
+              <div class="sm:col-span-2 space-y-1.5">
+                <label for="scenario-why" class="block text-[10px] font-bold text-vintage-navy/80 uppercase tracking-wider">Explanation / Rationale</label>
+                <textarea id="scenario-why" class="w-full min-h-[40px] px-3 py-2 bg-vintage-bg/40 border border-vintage-navy/15 focus:border-vintage-navy focus:bg-white rounded-lg text-sm text-vintage-navy placeholder-vintage-navy/30 outline-none transition focus:ring-2 focus:ring-vintage-navy/5 font-sans resize-y" placeholder="Explain why the correct answer is correct..." required></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 5: Correct Play Outcome -->
+          <div class="bg-white border border-vintage-navy/10 rounded-2xl p-6 shadow-sm hover:shadow-md transition space-y-4">
+            <h2 class="text-xs font-bold text-vintage-navy tracking-wider uppercase border-b border-vintage-navy/10 pb-2 flex items-center gap-2">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-vintage-red"></i> 5. Correct Play Sequence
+            </h2>
+            <div class="space-y-1.5">
+              <label for="scenario-outcome-preset" class="block text-[10px] font-bold text-vintage-navy/80 uppercase tracking-wider">Field Play Outcome Action</label>
+              <select id="scenario-outcome-preset" class="w-full px-3 py-2 bg-vintage-bg/40 border border-vintage-navy/15 focus:border-vintage-navy focus:bg-white rounded-lg text-sm text-vintage-navy outline-none transition focus:ring-2 focus:ring-vintage-navy/5 cursor-pointer font-sans">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+          </div>
+
+          <button onclick="saveScenario()" class="w-full flex items-center justify-center gap-2 py-3.5 px-6 bg-vintage-navy hover:bg-vintage-navy/95 text-white active:translate-y-px rounded-xl text-sm font-bold tracking-widest uppercase transition cursor-pointer shadow-md">
+            <i data-lucide="save" class="w-4 h-4"></i> Save Drill
+          </button>
+        </form>
+
+        <!-- Import/Export Scenarios -->
+        <div class="bg-white border border-vintage-navy/10 rounded-2xl p-6 shadow-sm hover:shadow-md transition space-y-4">
+          <h2 class="text-xs font-bold text-vintage-navy tracking-wider uppercase border-b border-vintage-navy/10 pb-2 flex items-center gap-2">
+            <i data-lucide="folder-heart" class="w-4 h-4 text-vintage-red"></i> Drill Management
+          </h2>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button onclick="exportDrills()" class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vintage-navy text-white hover:bg-vintage-navy/95 rounded-lg text-xs font-bold tracking-wider uppercase transition cursor-pointer shadow-sm active:translate-y-px">
+              <i data-lucide="download" class="w-4 h-4"></i> Export Drills
+            </button>
+            <button onclick="document.getElementById('import-file').click()" class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-vintage-navy border border-vintage-navy/20 hover:bg-vintage-bg rounded-lg text-xs font-bold tracking-wider uppercase transition cursor-pointer shadow-sm active:translate-y-px">
+              <i data-lucide="upload" class="w-4 h-4"></i> Import Drills
+            </button>
+            <input type="file" id="import-file" style="display: none;" onchange="importDrills(event)" accept=".json">
+          </div>
         </div>
 
-        <!-- SECTION 3: Hit Type -->
-        <div class="form-section">
-          <div class="section-title">3️⃣ THE HIT (PRE-DECISION)</div>
-          <div class="form-group">
-            <label for="scenario-hit-preset">BALL HIT TYPE</label>
-            <select id="scenario-hit-preset" class="form-control">
-              <!-- Dynamically populated from presets.js -->
-            </select>
+        <!-- Saved List -->
+        <div class="bg-white border border-vintage-navy/10 rounded-2xl p-6 shadow-sm hover:shadow-md transition space-y-4">
+          <h2 class="text-xs font-bold text-vintage-navy tracking-wider uppercase border-b border-vintage-navy/10 pb-2 flex items-center gap-2">
+            <i data-lucide="list" class="w-4 h-4 text-vintage-red"></i> Saved Custom Drills
+          </h2>
+          <div id="saved-scenarios-list" class="space-y-3">
+            <div class="text-xs text-vintage-navy/40 text-center py-6 font-medium">No saved custom drills yet.</div>
           </div>
         </div>
 
-        <!-- SECTION 4: Quiz Question -->
-        <div class="form-section">
-          <div class="section-title">4️⃣ THE QUESTION</div>
-          <div class="form-group">
-            <label for="scenario-question">QUESTION</label>
-            <input type="text" id="scenario-question" class="form-control" placeholder="What should you do?" required>
-          </div>
-          <div class="form-group">
-            <label for="scenario-choice-0">CHOICE A</label>
-            <input type="text" id="scenario-choice-0" class="form-control" placeholder="Option A" required>
-          </div>
-          <div class="form-group">
-            <label for="scenario-choice-1">CHOICE B</label>
-            <input type="text" id="scenario-choice-1" class="form-control" placeholder="Option B" required>
-          </div>
-          <div class="form-group">
-            <label for="scenario-choice-2">CHOICE C</label>
-            <input type="text" id="scenario-choice-2" class="form-control" placeholder="Option C" required>
-          </div>
-          <div class="form-group">
-            <label for="scenario-correct">CORRECT CHOICE</label>
-            <select id="scenario-correct" class="form-control">
-              <option value="0">CHOICE A</option>
-              <option value="1">CHOICE B</option>
-              <option value="2">CHOICE C</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="scenario-why">EXPLANATION (WHY)</label>
-            <textarea id="scenario-why" class="form-control" placeholder="Explanation shown to player after answering..." required></textarea>
-          </div>
-        </div>
-
-        <!-- SECTION 5: Correct Play Outcome -->
-        <div class="form-section">
-          <div class="section-title">5️⃣ CORRECT ANSWER ACTION</div>
-          <div class="form-group">
-            <label for="scenario-outcome-preset">FIELD PLAY SEQUENCE</label>
-            <select id="scenario-outcome-preset" class="form-control">
-              <!-- Dynamically populated from presets.js -->
-            </select>
-          </div>
-        </div>
-
-        <button class="btn-pixel btn-green" onclick="saveScenario()" style="margin-bottom: 16px;">💾 SAVE DRILL</button>
-      </form>
-
-      <!-- Import/Export Scenarios -->
-      <div class="form-section" style="margin-top: 10px;">
-        <div class="section-title">📤 DRILL MANAGEMENT</div>
-        <div class="import-export-wrap">
-          <button class="btn-pixel btn-blue" onclick="exportDrills()" style="font-size: 8px;">EXPORT DRILLS</button>
-          <button class="btn-pixel btn-blue" onclick="document.getElementById('import-file').click()" style="font-size: 8px;">IMPORT DRILLS</button>
-          <input type="file" id="import-file" style="display: none;" onchange="importDrills(event)" accept=".json">
-        </div>
       </div>
 
-      <!-- Saved List -->
-      <div class="form-section" style="margin-top: 10px;">
-        <div class="section-title">📋 SAVED CUSTOM DRILLS</div>
-        <div id="saved-scenarios-list" class="saved-list">
-          <div style="font-size: 8px; color: #777; text-align: center; padding: 10px;">NO SAVED DRILLS YET.</div>
+      <!-- RIGHT SIDE: Live Field Preview -->
+      <div class="lg:col-span-5 lg:sticky lg:top-8 flex flex-col items-center">
+        
+        <!-- Live Preview Card Header -->
+        <div class="w-full flex justify-between items-center bg-white border border-vintage-navy/10 rounded-t-2xl p-4 shadow-sm border-b-0">
+          <div class="flex items-center gap-2">
+            <div class="w-2.5 h-2.5 bg-vintage-red rounded-full"></div>
+            <span class="font-serif text-xs font-black text-vintage-navy tracking-widest uppercase">Live Field Preview</span>
+          </div>
+          <span class="text-[9px] font-pixel text-vintage-navy/50 tracking-wider">8-BIT GRAPHICS</span>
         </div>
+
+        <!-- Status Bar -->
+        <div class="w-full bg-vintage-navy text-vintage-bg px-4 py-3 flex items-center gap-3 shadow-inner">
+          <div class="w-2 h-2 bg-vintage-red rounded-full status-dot"></div>
+          <div id="status-text" class="font-pixel text-[8px] tracking-wide leading-relaxed text-vintage-bg/90 uppercase">
+            SETUP A DRILL ON THE LEFT AND CLICK PREVIEW PLAY
+          </div>
+        </div>
+
+        <!-- Field SVG Canvas Box -->
+        <div class="w-full bg-[#145a23] border border-vintage-navy/15 rounded-b-2xl shadow-lg relative overflow-hidden aspect-[320/360] max-w-[420px]">
+          <svg id="field-svg" viewBox="0 -60 320 360" xmlns="http://www.w3.org/2000/svg" class="w-full h-full block">
+            <!-- OUTFIELD GRASS -->
+            <rect x="0" y="-60" width="320" height="360" fill="#1a7a30" />
+            <rect x="0" y="-40" width="320" height="20" fill="#1d8535" />
+            <rect x="0" y="0" width="320" height="20" fill="#1d8535" />
+            <rect x="0" y="40" width="320" height="20" fill="#1d8535" />
+            <rect x="0" y="80" width="320" height="20" fill="#1d8535" />
+            <rect x="0" y="120" width="320" height="20" fill="#1d8535" />
+            <rect x="0" y="160" width="320" height="20" fill="#1d8535" />
+            <rect x="0" y="200" width="320" height="20" fill="#1d8535" />
+            <rect x="0" y="240" width="320" height="20" fill="#1d8535" />
+            <rect x="0" y="280" width="320" height="20" fill="#1d8535" />
+            
+            <!-- INFIELD GRASS -->
+            <polygon points="160,58 262,160 160,262 58,160" fill="#1e8a36" />
+            <polygon points="160,68 252,160 160,252 68,160" fill="#218f3a" />
+            <polygon points="160,80 242,160 160,242 78,160" fill="#1e8a36" />
+            <polygon points="160,94 230,160 160,228 90,160" fill="#218f3a" />
+            <polygon points="160,108 218,160 160,214 102,160" fill="#1e8a36" />
+            <polygon points="160,122 206,160 160,200 114,160" fill="#218f3a" />
+            <polygon points="160,136 194,160 160,186 126,160" fill="#1e8a36" />
+
+            <!-- SAND/DIRT RUNNING TRACKS -->
+            <ellipse cx="160" cy="266" rx="42" ry="28" fill="#c47c35" />
+            <ellipse cx="160" cy="266" rx="36" ry="22" fill="#d08840" />
+            <ellipse cx="262" cy="160" rx="24" ry="16" fill="#c47c35" />
+            <ellipse cx="262" cy="160" rx="18" ry="12" fill="#d08840" />
+            <ellipse cx="160" cy="58" rx="24" ry="16" fill="#c47c35" />
+            <ellipse cx="160" cy="58" rx="18" ry="12" fill="#d08840" />
+            <ellipse cx="58" cy="160" rx="24" ry="16" fill="#c47c35" />
+            <ellipse cx="58" cy="160" rx="18" ry="12" fill="#d08840" />
+
+            <path d="M 160,266 L 262,160 L 160,58 L 58,160 Z" fill="none" stroke="#c47c35" stroke-width="20" stroke-linejoin="round" />
+            <path d="M 160,266 L 262,160 L 160,58 L 58,160 Z" fill="none" stroke="#d08840" stroke-width="14" stroke-linejoin="round" />
+
+            <line x1="262" y1="160" x2="320" y2="106" stroke="#c47c35" stroke-width="20" stroke-linecap="round" />
+            <line x1="262" y1="160" x2="320" y2="106" stroke="#d08840" stroke-width="14" stroke-linecap="round" />
+            <line x1="58" y1="160" x2="0" y2="106" stroke="#c47c35" stroke-width="20" stroke-linecap="round" />
+            <line x1="58" y1="160" x2="0" y2="106" stroke="#d08840" stroke-width="14" stroke-linecap="round" />
+
+            <line x1="160" y1="266" x2="0" y2="106" stroke="white" stroke-width="2.5" opacity="0.7" />
+            <line x1="160" y1="266" x2="320" y2="106" stroke="white" stroke-width="2.5" opacity="0.7" />
+            <line x1="160" y1="266" x2="262" y2="160" stroke="white" stroke-width="2" opacity="0.55" stroke-dasharray="5,4" />
+            <line x1="262" y1="160" x2="160" y2="58" stroke="white" stroke-width="2" opacity="0.55" stroke-dasharray="5,4" />
+            <line x1="160" y1="58" x2="58" y2="160" stroke="white" stroke-width="2" opacity="0.55" stroke-dasharray="5,4" />
+            <line x1="58" y1="160" x2="160" y2="266" stroke="white" stroke-width="2" opacity="0.55" stroke-dasharray="5,4" />
+
+            <ellipse cx="160" cy="162" rx="20" ry="14" fill="#bf7428" />
+            <ellipse cx="160" cy="162" rx="15" ry="10" fill="#c98040" />
+            <rect x="154" y="159" width="12" height="6" rx="1" fill="white" />
+
+            <rect x="137" y="254" width="14" height="22" rx="1" fill="none" stroke="white" stroke-width="1.5" opacity="0.6" />
+            <rect x="169" y="254" width="14" height="22" rx="1" fill="none" stroke="white" stroke-width="1.5" opacity="0.6" />
+
+            <!-- BASES -->
+            <polygon id="base-home" points="148,256 172,256 172,268 160,276 148,268" fill="white" stroke="#ccc" stroke-width="1" />
+            <rect id="base-1b" x="254" y="152" width="16" height="16" rx="1" fill="white" stroke="#ddd" stroke-width="1" transform="rotate(45 262 160)" />
+            <rect id="base-2b" x="152" y="50" width="16" height="16" rx="1" fill="white" stroke="#ddd" stroke-width="1" transform="rotate(45 160 58)" />
+            <rect id="base-3b" x="50" y="152" width="16" height="16" rx="1" fill="white" stroke="#ddd" stroke-width="1" transform="rotate(45 58 160)" />
+            
+            <polygon id="hi-home" points="148,256 172,256 172,268 160,276 148,268" fill="#e74c3c" opacity="0" />
+            <rect id="hi-1b" x="254" y="152" width="16" height="16" rx="1" fill="#27ae60" opacity="0" transform="rotate(45 262 160)" />
+            <rect id="hi-2b" x="152" y="50" width="16" height="16" rx="1" fill="#2980b9" opacity="0" transform="rotate(45 160 58)" />
+            <rect id="hi-3b" x="50" y="152" width="16" height="16" rx="1" fill="#e67e22" opacity="0" transform="rotate(45 58 160)" />
+
+            <text x="280" y="156" font-family="'Courier New',monospace" font-size="8" font-weight="bold" fill="#27ae60">1B</text>
+            <text x="152" y="42" font-family="'Courier New',monospace" font-size="8" font-weight="bold" fill="#2980b9">2B</text>
+            <text x="26" y="156" font-family="'Courier New',monospace" font-size="8" font-weight="bold" fill="#e67e22">3B</text>
+            <text x="147" y="295" font-family="'Courier New',monospace" font-size="7" font-weight="bold" fill="#e74c3c">HOME</text>
+
+            <!-- BALL -->
+            <g id="ball" transform="translate(160,155)" opacity="0">
+              <circle cx="0" cy="0" r="4" fill="white" stroke="#ddd" stroke-width="0.5" />
+              <path d="M -1,-3 Q 1,-2 1,0 Q 1,2 -1,3" fill="none" stroke="#cc3333" stroke-width="0.8" />
+              <path d="M 1,-3 Q -1,-2 -1,0 Q -1,2 1,3" fill="none" stroke="#cc3333" stroke-width="0.8" />
+            </g>
+
+            <g id="popfly-ball" transform="translate(160,248)" opacity="0">
+              <circle cx="0" cy="0" r="4" fill="white" stroke="#ddd" stroke-width="0.5" />
+              <path d="M -1,-3 Q 1,-2 1,0 Q 1,2 -1,3" fill="none" stroke="#cc3333" stroke-width="0.8" />
+              <path d="M 1,-3 Q -1,-2 -1,0 Q -1,2 1,3" fill="none" stroke="#cc3333" stroke-width="0.8" />
+            </g>
+
+            <!-- DEFENSIVE PLAYERS -->
+            <!-- Shortstop -->
+            <g id="fielder-ss" transform="translate(105,85) scale(0.75)">
+              <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
+              <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="-8" y="-15" width="16" height="3" fill="#222" />
+              <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
+              <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
+              <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
+              <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
+              <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
+              <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
+              <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
+              <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
+              <rect x="-8.5" y="-47" width="17" height="9" rx="3.5" fill="#e67e22" /><rect x="-10.5" y="-41" width="21" height="2.5" rx="1" fill="#e67e22" /><rect x="-1.5" y="-48.5" width="3" height="1.5" rx="0.5" fill="#e67e22" /><rect x="-2.5" y="-45.5" width="5" height="5" rx="1" fill="#ffffff" />
+            </g>
+
+            <!-- Second Baseman -->
+            <g id="fielder-2b" transform="translate(218,108) scale(0.75)">
+              <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
+              <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="-8" y="-15" width="16" height="3" fill="#222" />
+              <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
+              <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
+              <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
+              <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
+              <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
+              <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
+              <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
+              <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
+              <rect x="-8.5" y="-47" width="17" height="9" rx="3.5" fill="#e67e22" /><rect x="-10.5" y="-41" width="21" height="2.5" rx="1" fill="#e67e22" /><rect x="-1.5" y="-48.5" width="3" height="1.5" rx="0.5" fill="#e67e22" /><rect x="-2.5" y="-45.5" width="5" height="5" rx="1" fill="#ffffff" />
+            </g>
+
+            <!-- Pitcher -->
+            <g id="pitcher" transform="translate(160,152) scale(0.75)">
+              <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
+              <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="-8" y="-15" width="16" height="3" fill="#222" />
+              <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
+              <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
+              <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
+              <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
+              <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
+              <g id="pitcher-arm">
+                <rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" />
+                <rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" />
+                <circle id="pitcher-ball-hand" cx="12" cy="-17" r="3.5" fill="white" stroke="#ddd" stroke-width="0.5" />
+              </g>
+              <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
+              <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
+              <rect x="-8.5" y="-47" width="17" height="9" rx="3.5" fill="#e67e22" /><rect x="-10.5" y="-41" width="21" height="2.5" rx="1" fill="#e67e22" /><rect x="-1.5" y="-48.5" width="3" height="1.5" rx="0.5" fill="#e67e22" /><rect x="-2.5" y="-45.5" width="5" height="5" rx="1" fill="#ffffff" />
+            </g>
+
+            <!-- 1st Baseman -->
+            <g id="fielder-1b" transform="translate(240,172) scale(0.75)">
+              <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
+              <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="-8" y="-15" width="16" height="3" fill="#222" />
+              <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
+              <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
+              <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
+              <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
+              <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
+              <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
+              <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
+              <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
+              <rect x="-8.5" y="-47" width="17" height="9" rx="3.5" fill="#e67e22" /><rect x="-10.5" y="-41" width="21" height="2.5" rx="1" fill="#e67e22" /><rect x="-1.5" y="-48.5" width="3" height="1.5" rx="0.5" fill="#e67e22" /><rect x="-2.5" y="-45.5" width="5" height="5" rx="1" fill="#ffffff" />
+            </g>
+
+            <!-- 3rd Baseman -->
+            <g id="fielder-3b" transform="translate(78,172) scale(0.75)">
+              <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
+              <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="-8" y="-15" width="16" height="3" fill="#222" />
+              <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
+              <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
+              <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
+              <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
+              <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
+              <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
+              <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
+              <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
+              <rect x="-8.5" y="-47" width="17" height="9" rx="3.5" fill="#e67e22" /><rect x="-10.5" y="-41" width="21" height="2.5" rx="1" fill="#e67e22" /><rect x="-1.5" y="-48.5" width="3" height="1.5" rx="0.5" fill="#e67e22" /><rect x="-2.5" y="-45.5" width="5" height="5" rx="1" fill="#ffffff" />
+            </g>
+
+            <!-- Left Fielder -->
+            <g id="fielder-lf" transform="translate(45,25) scale(0.65)">
+              <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
+              <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="-8" y="-15" width="16" height="3" fill="#222" />
+              <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
+              <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
+              <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
+              <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
+              <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
+              <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
+              <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
+              <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
+              <rect x="-8.5" y="-47" width="17" height="9" rx="3.5" fill="#e67e22" /><rect x="-10.5" y="-41" width="21" height="2.5" rx="1" fill="#e67e22" /><rect x="-1.5" y="-48.5" width="3" height="1.5" rx="0.5" fill="#e67e22" /><rect x="-2.5" y="-45.5" width="5" height="5" rx="1" fill="#ffffff" />
+            </g>
+
+            <!-- Center Fielder -->
+            <g id="fielder-cf" transform="translate(160,-15) scale(0.65)">
+              <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
+              <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="-8" y="-15" width="16" height="3" fill="#222" />
+              <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
+              <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
+              <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
+              <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
+              <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
+              <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
+              <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
+              <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
+              <rect x="-8.5" y="-47" width="17" height="9" rx="3.5" fill="#e67e22" /><rect x="-10.5" y="-41" width="21" height="2.5" rx="1" fill="#e67e22" /><rect x="-1.5" y="-48.5" width="3" height="1.5" rx="0.5" fill="#e67e22" /><rect x="-2.5" y="-45.5" width="5" height="5" rx="1" fill="#ffffff" />
+            </g>
+
+            <!-- Right Fielder -->
+            <g id="fielder-rf" transform="translate(275,25) scale(0.65)">
+              <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
+              <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
+              <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
+              <rect x="-8" y="-15" width="16" height="3" fill="#222" />
+              <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
+              <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
+              <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
+              <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
+              <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
+              <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
+              <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
+              <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
+              <rect x="-8.5" y="-47" width="17" height="9" rx="3.5" fill="#e67e22" /><rect x="-10.5" y="-41" width="21" height="2.5" rx="1" fill="#e67e22" /><rect x="-1.5" y="-48.5" width="3" height="1.5" rx="0.5" fill="#e67e22" /><rect x="-2.5" y="-45.5" width="5" height="5" rx="1" fill="#ffffff" />
+            </g>
+
+            <!-- Batter -->
+            <g id="player" transform="translate(148,258) scale(0.75)">
+              <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.35)" />
+              <rect x="-8" y="-3" width="6" height="4" rx="1" fill="#111" />
+              <rect x="2" y="-3" width="6" height="4" rx="1" fill="#111" />
+              <rect x="-8" y="-13" width="6" height="11" fill="#f0f0f0" />
+              <rect x="2" y="-13" width="6" height="11" fill="#f0f0f0" />
+              <rect x="-8" y="-10" width="6" height="3" fill="#d00020" />
+              <rect x="2" y="-10" width="6" height="3" fill="#d00020" />
+              <rect x="-9" y="-15" width="18" height="3" fill="#222" />
+              <rect x="-9" y="-28" width="18" height="14" fill="#f0f0f0" />
+              <rect x="-9" y="-22" width="18" height="3" fill="#d00020" />
+              <rect x="-13" y="-28" width="5" height="6" rx="1" fill="#f0f0f0" />
+              <rect x="8" y="-28" width="5" height="6" rx="1" fill="#f0f0f0" />
+              <g id="bat-group">
+                <rect x="6" y="-44" width="4" height="28" rx="2" fill="#8B4513" transform="rotate(-30, 8, -24)" />
+                <rect x="5" y="-45" width="6" height="4" rx="2" fill="#6B3010" transform="rotate(-30, 8, -24)" />
+                <rect x="6" y="-38" width="4" height="6" rx="1" fill="#a05020" transform="rotate(-30, 8, -24)" />
+              </g>
+              <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" />
+              <rect x="-9" y="-43" width="18" height="13" rx="2" fill="#f5c5a3" />
+              <rect x="-8.5" y="-47" width="17" height="9" rx="3.5" fill="#0a1a5c" />
+              <rect x="-10.5" y="-41" width="21" height="2.5" rx="1" fill="#0a1a5c" />
+              <rect x="-9.5" y="-42" width="3" height="6" rx="1" fill="#0a1a5c" />
+              <rect x="-1.5" y="-48.5" width="3" height="1.5" rx="0.5" fill="#0a1a5c" />
+              <rect x="-2.5" y="-45.5" width="5" height="5" rx="1" fill="#cc0000" />
+              <rect x="-4" y="-38" width="3" height="3" fill="#222" />
+              <rect x="1" y="-38" width="3" height="3" fill="#222" />
+              <rect x="-2" y="-33" width="4" height="1" fill="#b09070" />
+            </g>
+
+            <!-- Catcher -->
+            <g id="catcher" transform="translate(160,282) scale(0.75)" filter="url(#outline)">
+              <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.35)" />
+              <rect x="-11" y="-8" width="7" height="6" rx="1" fill="#2c3e50" />
+              <rect x="4" y="-8" width="7" height="6" rx="1" fill="#2c3e50" />
+              <rect x="-11" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="6" y="-3" width="5" height="4" rx="1" fill="#111" />
+              <rect x="-10" y="-8" width="5" height="5" fill="#b85300" />
+              <rect x="5" y="-8" width="5" height="5" fill="#b85300" />
+              <rect x="-8" y="-20" width="16" height="13" fill="#2c3e50" />
+              <rect x="-8" y="-10" width="16" height="3" fill="#222" />
+              <rect x="-9" y="-19" width="18" height="10" fill="#b85300" rx="1" />
+              <rect x="-7" y="-18" width="14" height="8" fill="none" stroke="#111" stroke-width="0.8" />
+              <line x1="-9" y1="-14" x2="9" y2="-14" stroke="#111" stroke-width="0.8" />
+              <rect x="-11" y="-18" width="4" height="6" rx="1" fill="#2c3e50" />
+              <ellipse cx="-12" cy="-14" rx="5" ry="4.5" fill="#7a3810" />
+              <ellipse cx="-12" cy="-14" rx="3" ry="2.5" fill="#9a4c20" />
+              <rect x="7" y="-18" width="4" height="6" rx="1" fill="#2c3e50" />
+              <rect x="8" y="-13" width="3" height="5" rx="1" fill="#f5c5a3" />
+              <rect x="-3" y="-23" width="6" height="4" fill="#f5c5a3" />
+              <rect x="-8" y="-33" width="16" height="11" rx="2" fill="#f5c5a3" />
+              <rect x="-7" y="-32" width="14" height="10" fill="#333" rx="1" />
+              <line x1="-5" y1="-29" x2="5" y2="-29" stroke="#888" stroke-width="0.8" />
+              <line x1="-5" y1="-26" x2="5" y2="-26" stroke="#888" stroke-width="0.8" />
+              <line x1="-3" y1="-31" x2="-3" y2="-23" stroke="#888" stroke-width="0.8" />
+              <line x1="3" y1="-31" x2="3" y2="-23" stroke="#888" stroke-width="0.8" />
+              <rect x="-9" y="-34" width="18" height="4" rx="1" fill="#b85300" />
+              <rect x="-7" y="-42" width="14" height="9" rx="2" fill="#b85300" />
+            </g>
+
+            <!-- DYNAMIC YOU INDICATORS (Glow + Text) -->
+            <!-- We place them as root defs and attach them in js -->
+            <defs>
+              <ellipse id="you-glow" cx="0" cy="2" rx="15" ry="5.5" fill="none" stroke="#f0e040" stroke-width="1.8" opacity="0" pointer-events="none" class="you-glow" />
+              <text id="you-text" x="0" y="-68" font-family="'Press Start 2P', monospace" font-size="7.5" font-weight="bold" fill="#f0e040" text-anchor="middle" opacity="0" stroke="#000" stroke-width="1.5" class="you-text">YOU</text>
+              <filter id="outline">
+                <feMorphology in="SourceAlpha" result="dilated" operator="dilate" radius="0.8" />
+                <feFlood flood-color="#000000" result="colored" />
+                <feComposite in="colored" in2="dilated" operator="in" result="outline" />
+                <feMerge>
+                  <feMergeNode in="outline" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+          </svg>
+        </div>
+
+        <!-- Preview Play Button below SVG -->
+        <button id="preview-btn" onclick="previewPlay()" class="w-full flex items-center justify-center gap-2.5 py-4 px-6 bg-vintage-red hover:bg-vintage-red/95 text-white active:translate-y-px rounded-xl text-sm font-bold tracking-widest uppercase transition cursor-pointer shadow-md mt-4 disabled:opacity-40 disabled:cursor-not-allowed">
+          <i data-lucide="play" class="w-4 h-4 fill-white"></i> Preview Play
+        </button>
+
       </div>
+
     </div>
-  </div>
+  </main>
 
   <!-- LOAD THE SCRIPTS SEQUENTIALLY -->
-  <script src="js/audio.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/presets.js"></script>
-  <script src="js/engine.js"></script>
-  <script src="js/creator.js"></script>
+  <script src="js/audio.js?v=1.3"></script>
+  <script src="js/storage.js?v=1.3"></script>
+  <script src="js/presets.js?v=1.3"></script>
+  <script src="js/engine.js?v=1.3"></script>
+  <script src="js/creator.js?v=1.3"></script>
 </body>
 </html>
