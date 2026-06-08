@@ -477,9 +477,13 @@
     <div class="menu-title">BATTERPLAY</div>
     <div class="menu-subtitle">SELECT YOUR ROLE</div>
     <button class="menu-btn" onclick="selectRole('3rd_base')">🧤 3RD BASE</button>
-    <button class="menu-btn disabled" disabled>🏃 BASES</button>
-    <button class="menu-btn disabled" disabled>🥎 PITCHER</button>
-    <button class="menu-btn disabled" disabled>🧤 CATCHER</button>
+    <button class="menu-btn" onclick="selectRole('hitter')">🥎 HITTER</button>
+    <button class="menu-btn" onclick="toggleCustomDrillsMenu()">📋 CUSTOM DRILLS</button>
+    <!-- Custom Drills Submenu -->
+    <div id="custom-drills-list" style="display: none; width: 100%; max-height: 150px; overflow-y: auto; margin-top: 10px; border: 2px dashed #2ecc71; padding: 8px; background: #081208;">
+      <!-- Populated via JS -->
+    </div>
+    <button class="menu-btn" onclick="window.location.href='creator.html'" style="background: #050e1a; border-color: #2980b9; color: #7ec8e3; box-shadow: 4px 4px 0 #154b6e; margin-top: 14px;">🎨 CREATE DRILLS</button>
   </div>
 
   <!-- ============ GAMEPLAY SCREEN ============ -->
@@ -580,6 +584,75 @@
         <path d="M -1,-3 Q 1,-2 1,0 Q 1,2 -1,3" fill="none" stroke="#cc3333" stroke-width="0.8" />
         <path d="M 1,-3 Q -1,-2 -1,0 Q -1,2 1,3" fill="none" stroke="#cc3333" stroke-width="0.8" />
       </g>
+
+      <!-- Left Fielder -->
+      <g id="fielder-lf" transform="translate(60,45) scale(0.65)">
+        <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
+        <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
+        <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
+        <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
+        <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
+        <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
+        <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
+        <rect x="-8" y="-15" width="16" height="3" fill="#222" />
+        <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
+        <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
+        <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
+        <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
+        <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
+        <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
+        <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
+        <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
+        <rect x="-11" y="-44" width="22" height="4" rx="1" fill="#e67e22" /><rect x="-7" y="-55" width="14" height="13" rx="2" fill="#e67e22" /><rect x="-2" y="-57" width="4" height="3" rx="1" fill="#e67e22" /><rect x="-3" y="-52" width="6" height="7" rx="1" fill="#ffffff" />
+      </g>
+
+      <!-- Center Fielder -->
+      <g id="fielder-cf" transform="translate(160,25) scale(0.65)">
+        <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
+        <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
+        <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
+        <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
+        <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
+        <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
+        <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
+        <rect x="-8" y="-15" width="16" height="3" fill="#222" />
+        <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
+        <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
+        <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
+        <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
+        <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
+        <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
+        <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
+        <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
+        <rect x="-11" y="-44" width="22" height="4" rx="1" fill="#e67e22" /><rect x="-7" y="-55" width="14" height="13" rx="2" fill="#e67e22" /><rect x="-2" y="-57" width="4" height="3" rx="1" fill="#e67e22" /><rect x="-3" y="-52" width="6" height="7" rx="1" fill="#ffffff" />
+      </g>
+
+      <!-- Right Fielder -->
+      <g id="fielder-rf" transform="translate(260,45) scale(0.65)">
+        <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
+        <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
+        <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
+        <rect x="-7" y="-13" width="5" height="11" fill="#2c3e50" />
+        <rect x="2" y="-13" width="5" height="11" fill="#2c3e50" />
+        <rect x="-7" y="-10" width="5" height="3" fill="#e67e22" />
+        <rect x="2" y="-10" width="5" height="3" fill="#e67e22" />
+        <rect x="-8" y="-15" width="16" height="3" fill="#222" />
+        <rect x="-8" y="-28" width="16" height="14" fill="#2c3e50" />
+        <rect x="-8" y="-22" width="16" height="3" fill="#e67e22" />
+        <rect x="-13" y="-26" width="5" height="5" rx="1" fill="#2c3e50" />
+        <ellipse cx="-13" cy="-23" rx="4" ry="3.5" fill="#7a3810" />
+        <ellipse cx="-13" cy="-23" rx="2.5" ry="2" fill="#9a4c20" />
+        <g><rect x="8" y="-28" width="5" height="6" rx="1" fill="#2c3e50" /><rect x="10" y="-24" width="4" height="8" rx="1" fill="#f5c5a3" /></g>
+        <rect x="-3" y="-32" width="6" height="5" fill="#f5c5a3" /><rect x="-8" y="-43" width="16" height="12" rx="2" fill="#f5c5a3" />
+        <rect x="-4" y="-39" width="3" height="3" fill="#222" /><rect x="1" y="-39" width="3" height="3" fill="#222" />
+        <rect x="-11" y="-44" width="22" height="4" rx="1" fill="#e67e22" /><rect x="-7" y="-55" width="14" height="13" rx="2" fill="#e67e22" /><rect x="-2" y="-57" width="4" height="3" rx="1" fill="#e67e22" /><rect x="-3" y="-52" width="6" height="7" rx="1" fill="#ffffff" />
+      </g>
+
+      <defs>
+        <ellipse id="you-glow" cx="0" cy="2" rx="15" ry="5.5" fill="none" stroke="#f0e040" stroke-width="1.8" opacity="0" pointer-events="none" class="you-glow" />
+        <text id="you-text" x="0" y="-68" font-family="'Press Start 2P', monospace" font-size="7.5" font-weight="bold" fill="#f0e040" text-anchor="middle" opacity="0" stroke="#000" stroke-width="1.5" class="you-text">YOU</text>
+      </defs>
+
       <!-- FIELDERS (2B & SS) -->
       <!-- Second Baseman (between 1st & 2nd) -->
       <g id="fielder-2b" transform="translate(218,108) scale(0.75)">
@@ -717,7 +790,6 @@
 
       <!-- 3rd Baseman -->
       <g id="fielder-3b" transform="translate(78,172) scale(0.75)">
-        <ellipse id="fielder-3b-you-glow" cx="0" cy="2" rx="15" ry="5.5" fill="none" stroke="#f0e040" stroke-width="1.8" opacity="0" pointer-events="none" />
         <ellipse cx="0" cy="2" rx="9" ry="3" fill="rgba(0,0,0,0.3)" />
         <rect x="-7" y="-3" width="5" height="4" rx="1" fill="#111" />
         <rect x="2" y="-3" width="5" height="4" rx="1" fill="#111" />
@@ -747,7 +819,6 @@
         <rect x="-7" y="-55" width="14" height="13" rx="2" fill="#e67e22" />
         <rect x="-2" y="-57" width="4" height="3" rx="1" fill="#e67e22" />
         <rect x="-3" y="-52" width="6" height="7" rx="1" fill="#ffffff" />
-        <text id="fielder-3b-you-text" x="0" y="-68" font-family="'Press Start 2P', monospace" font-size="7.5" font-weight="bold" fill="#f0e040" text-anchor="middle" opacity="0" stroke="#000" stroke-width="1.5" paint-order="stroke fill">YOU</text>
       </g>
       <!-- BATTER -->
       <g id="player" transform="translate(148,258) scale(0.75)">
@@ -1017,6 +1088,10 @@
     <div id="result-explanation" style="font-family: 'Press Start 2P', monospace; font-size: 8px; color: #e8f5e9; text-align: center; margin-top: 24px; max-width: 340px; line-height: 1.8; letter-spacing: 1px; opacity: 0; transform: translateY(10px); transition: all 0.3s;"></div>
   </div>
 
+  <script src="js/audio.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/presets.js"></script>
+  <script src="js/engine.js"></script>
   <script>
     const PLAYER_SCALE = 0.75;
 
@@ -1409,17 +1484,51 @@
       isPlayAgain = false;
       isAnimating = false;
 
-      // Handle YOU glow and text for 3B role
-      const youText = document.getElementById('fielder-3b-you-text');
-      const youGlow = document.getElementById('fielder-3b-you-glow');
-      if (youText && youGlow) {
-        if (currentRole === '3rd_base') {
-          youText.setAttribute('opacity', '1');
-          youGlow.setAttribute('opacity', '1');
-        } else {
-          youText.setAttribute('opacity', '0');
-          youGlow.setAttribute('opacity', '0');
-        }
+      // Handle YOU glow and text dynamically
+      updateYouIndicator(currentRole);
+    }
+
+    function updateYouIndicator(role) {
+      const glow = document.getElementById('you-glow');
+      const text = document.getElementById('you-text');
+      if (!glow || !text) return;
+      
+      glow.remove();
+      text.remove();
+      
+      let parent = null;
+      let y = -68;
+      
+      if (role === 'hitter') {
+        parent = document.getElementById('player');
+      } else if (role === 'catcher') {
+        parent = document.getElementById('catcher');
+        y = -52;
+      } else {
+        const positionIdMap = {
+          'pitcher': 'pitcher',
+          'catcher': 'catcher',
+          '1b': 'fielder-1b',
+          '2b': 'fielder-2b',
+          '3b': 'fielder-3b',
+          'ss': 'fielder-ss',
+          'lf': 'fielder-lf',
+          'cf': 'fielder-cf',
+          'rf': 'fielder-rf'
+        };
+        const id = positionIdMap[role] || 'fielder-3b';
+        parent = document.getElementById(id);
+      }
+      
+      if (parent) {
+        parent.appendChild(glow);
+        parent.appendChild(text);
+        glow.setAttribute('opacity', '1');
+        text.setAttribute('opacity', '1');
+        text.setAttribute('y', String(y));
+      } else {
+        glow.setAttribute('opacity', '0');
+        text.setAttribute('opacity', '0');
       }
     }
 
@@ -1440,8 +1549,61 @@
       setupScenario();
     }
 
+    function toggleCustomDrillsMenu() {
+      playSelectSound();
+      const list = document.getElementById('custom-drills-list');
+      if (list.style.display === 'none') {
+        list.style.display = 'block';
+        populateCustomDrillsList();
+      } else {
+        list.style.display = 'none';
+      }
+    }
+
+    function populateCustomDrillsList() {
+      const list = document.getElementById('custom-drills-list');
+      if (!list) return;
+      list.innerHTML = '';
+      
+      const scenarios = ScenarioStorage.getAll();
+      if (scenarios.length === 0) {
+        list.innerHTML = '<div style="font-size: 8px; color: #777; padding: 10px; text-align: center;">NO CUSTOM DRILLS FOUND.<br><br>CREATE THEM IN THE SCENARIO CREATOR!</div>';
+        return;
+      }
+      
+      scenarios.forEach(s => {
+        const btn = document.createElement('button');
+        btn.className = 'menu-btn';
+        btn.style.padding = '8px';
+        btn.style.fontSize = '8px';
+        btn.style.marginBottom = '6px';
+        btn.style.textTransform = 'none';
+        btn.onclick = () => selectCustomDrill(s.id);
+        btn.textContent = `${s.title.toUpperCase()}: ${s.situation.toUpperCase()}`;
+        list.appendChild(btn);
+      });
+    }
+
+    function selectCustomDrill(id) {
+      const customScenarios = ScenarioStorage.getAll();
+      const index = customScenarios.findIndex(s => s.id === id);
+      if (index === -1) return;
+      
+      activeScenarios = customScenarios;
+      currentScenarioIndex = index;
+      currentRole = customScenarios[index].role;
+      
+      playSelectSound();
+      document.getElementById('menu-screen').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'flex';
+      
+      resetGame();
+      setupScenario();
+    }
+
     function goBackToMenu() {
       playSelectSound();
+      document.getElementById('menu-screen').querySelector('#custom-drills-list').style.display = 'none';
       document.getElementById('game-screen').style.display = 'none';
       document.getElementById('menu-screen').style.display = 'flex';
       resetGame();
@@ -1623,6 +1785,28 @@
         resetGame();
         return;
       }
+
+      const scenario = activeScenarios[currentScenarioIndex];
+      const isCustom = scenario.id.toString().startsWith('custom_');
+
+      if (isCustom) {
+        isAnimating = true;
+        setDisabled(true);
+        const glow = document.getElementById('you-glow');
+        const text = document.getElementById('you-text');
+        if (glow) glow.setAttribute('opacity', '0');
+        if (text) text.setAttribute('opacity', '0');
+        
+        const hitPreset = HIT_PRESETS.find(h => h.id === scenario.hitPresetId) || HIT_PRESETS[0];
+        
+        await AnimationEngine.triggerPitch(currentRole, hitPreset, scenario.runners, () => {
+          showQuizForScenario();
+          setDisabled(false);
+          isAnimating = false;
+        });
+        return;
+      }
+
       isAnimating = true;
       setDisabled(true);
 
@@ -2023,6 +2207,33 @@
 
       const scenario = activeScenarios[currentScenarioIndex];
       const isCorrect = (index === scenario.correctIndex);
+      const isCustom = scenario.id.toString().startsWith('custom_');
+
+      if (isCustom) {
+        if (isCorrect) {
+          const hitPreset = HIT_PRESETS.find(h => h.id === scenario.hitPresetId) || HIT_PRESETS[0];
+          const outcomePreset = OUTCOME_PRESETS.find(o => o.id === scenario.outcomePresetId) || OUTCOME_PRESETS[0];
+          
+          if (currentRole === 'hitter') {
+            await AnimationEngine.playHitterCorrectHit(hitPreset, async () => {
+              await AnimationEngine.playOutcomeSteps(outcomePreset.steps, scenario);
+            });
+          } else {
+            await AnimationEngine.playOutcomeSteps(outcomePreset.steps, scenario);
+          }
+          await showResult(true, scenario.why);
+          isAnimating = false;
+          showNextButton();
+        } else {
+          if (currentRole === 'hitter') {
+            await AnimationEngine.playHitterSwingMiss();
+          }
+          await showResult(false, scenario.why);
+          isAnimating = false;
+          showTryAgainButton();
+        }
+        return;
+      }
 
       if (currentRole === 'hitter') {
         if (isCorrect) {
@@ -2125,8 +2336,15 @@
       spawnDust(fielderTarget.x, fielderTarget.y, 10);
       playCrowdCheer(2.5, 0.25);
 
+      // Show OUT tag on runner 2b
+      showFloatingTag(runner2bG, 'OUT', '#e74c3c');
       // Hide runner 2b (out)
       runner2bG.setAttribute('opacity', '0');
+
+      // Show SAFE tags on runner 1b and batter
+      showFloatingTag(runner1bG, 'SAFE', '#2ecc71');
+      showFloatingTag(playerG, 'SAFE', '#2ecc71');
+
       setStatus("FORCE OUT AT 3RD BASE! LEAD RUNNER IS OUT!");
       await wait(600);
     }
@@ -2161,6 +2379,8 @@
       spawnDust(runnerTarget.x, runnerTarget.y, 14);
       playCrowdCheer(2.5, 0.25);
 
+      // Show OUT tag on runner 2b
+      showFloatingTag(runner2bG, 'OUT', '#e74c3c');
       runner2bG.setAttribute('opacity', '0'); // Tagged out!
       setStatus("OUT AT 3RD BASE! STEAL PREVENTED!");
       await wait(600);
@@ -2214,7 +2434,12 @@
       spawnDust(targetPos.x, targetPos.y, 10);
       playCrowdCheer(2.5, 0.25);
       popflyBall.setAttribute('opacity', '0');
+
+      // Show OUT tag on runner 1b and SAFE tag on batter
+      showFloatingTag(runner1bG, 'OUT', '#e74c3c');
       runner1bG.setAttribute('opacity', '0'); // force out!
+
+      showFloatingTag(playerG, 'SAFE', '#2ecc71');
 
       // Reset second baseman back
       secondBaseman.setAttribute('transform', `translate(218,108) scale(${PLAYER_SCALE})`);
@@ -2265,6 +2490,8 @@
       // Reset first baseman back
       firstBaseman.setAttribute('transform', `translate(240,172) scale(${PLAYER_SCALE})`);
 
+      // Show OUT tag on batter
+      showFloatingTag(playerG, 'OUT', '#e74c3c');
       // Batter stays at 1B but is out (opacity decrease)
       playerG.setAttribute('opacity', '0.5'); 
 
@@ -2305,8 +2532,13 @@
       spawnDust(tagSpot.x, tagSpot.y, 14);
       playCrowdCheer(2.5, 0.25);
 
+      // Show OUT tag on runner 2b and SAFE tag on batter
+      showFloatingTag(runner2bG, 'OUT', '#e74c3c');
       // Hide runner (tagged out)
       runner2bG.setAttribute('opacity', '0');
+
+      showFloatingTag(playerG, 'SAFE', '#2ecc71');
+
       setStatus("DOUBLE PLAY! TAGGED OUT!");
       await wait(600);
     }
@@ -2844,6 +3076,9 @@
         const batterPromise = runElementToBases(playerG, ['1b']);
         
         await Promise.all([run3bPromise, batterPromise]);
+        showFloatingTag(document.getElementById('runner-3b'), 'SAFE', '#2ecc71');
+        showFloatingTag(playerG, 'OUT', '#e74c3c');
+        playerG.setAttribute('opacity', '0');
         setStatus("SACRIFICE FLY! RUN SCORED!");
         
       } else if (scenarioId === 2) {
@@ -2863,6 +3098,9 @@
         
         await Promise.all([run2bPromise, batterPromise, throwBall]);
         popflyBall.setAttribute('opacity', '0');
+        showFloatingTag(document.getElementById('runner-2b'), 'SAFE', '#2ecc71');
+        showFloatingTag(playerG, 'OUT', '#e74c3c');
+        playerG.setAttribute('opacity', '0');
         setStatus("GROUNDOUT. RUNNER ADVANCED TO 3RD!");
         
       } else if (scenarioId === 3) {
@@ -2874,6 +3112,8 @@
         const batterPromise = runElementToBases(playerG, ['1b']);
         
         await Promise.all([run2bPromise, batterPromise]);
+        showFloatingTag(document.getElementById('runner-2b'), 'SAFE', '#2ecc71');
+        showFloatingTag(playerG, 'SAFE', '#2ecc71');
         setStatus("RBI SINGLE! RUN SCORED! SAFE!");
         
       } else if (scenarioId === 4) {
@@ -2893,6 +3133,10 @@
         const batterPromise = runElementToBases(playerG, ['1b']);
         
         await Promise.all([run3bPromise, run2bPromise, batterPromise]);
+        showFloatingTag(document.getElementById('runner-3b'), 'SAFE', '#2ecc71');
+        showFloatingTag(document.getElementById('runner-2b'), 'SAFE', '#2ecc71');
+        showFloatingTag(playerG, 'OUT', '#e74c3c');
+        playerG.setAttribute('opacity', '0');
         setStatus("SAC FLY! RUN SCORED!");
         
       } else if (scenarioId === 5) {
@@ -2904,6 +3148,8 @@
         const batterPromise = runElementToBases(playerG, ['1b']);
         
         await Promise.all([run1bPromise, batterPromise]);
+        showFloatingTag(document.getElementById('runner-1b'), 'SAFE', '#2ecc71');
+        showFloatingTag(playerG, 'SAFE', '#2ecc71');
         setStatus("LINE DRIVE SINGLE TO RIGHT! SAFE!");
         
       } else if (scenarioId === 6) {
@@ -2915,6 +3161,8 @@
         const batterPromise = runElementToBases(playerG, ['1b']);
         
         await Promise.all([run3bPromise, batterPromise]);
+        showFloatingTag(document.getElementById('runner-3b'), 'SAFE', '#2ecc71');
+        showFloatingTag(playerG, 'SAFE', '#2ecc71');
         playCrowdCheer(6.0, 0.45);
         setStatus("WALK-OFF SINGLE! YOU WIN THE GAME! 🏆");
       }
