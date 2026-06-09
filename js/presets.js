@@ -22,15 +22,15 @@ const BASE_COORDS = {
 
 const ROLE_ALLOWED_OUTCOMES = {
   'hitter': ['runner_scores_3b', 'runner_advances_3b', 'runners_advance_all', 'batter_safe_1b', 'runner_scores_2b', 'throw_1b_out_runners_advance', 'throw_1b_out_runners_hold'],
-  'pitcher': ['throw_1b_out', 'throw_2b_out', 'throw_3b_out', 'throw_home_out', 'tag_runner_between_bases', 'double_play_163', 'throw_1b_out_runners_hold', 'throw_1b_out_runners_advance'],
-  'catcher': ['throw_1b_out', 'throw_2b_out', 'throw_3b_out', 'step_on_home', 'tag_runner_at_home', 'throw_1b_out_runners_hold'],
-  '1b': ['step_on_1b', 'tag_runner_at_1b', 'throw_2b_out', 'throw_3b_out', 'throw_home_out', 'double_play_363', 'throw_1b_out_runners_hold'],
-  '2b': ['step_on_2b', 'tag_runner_at_2b', 'throw_1b_out', 'throw_3b_out', 'throw_home_out', 'double_play_463', 'throw_1b_out_runners_hold', 'throw_1b_out_runners_advance'],
-  'ss': ['step_on_2b', 'tag_runner_at_2b', 'throw_1b_out', 'throw_3b_out', 'throw_home_out', 'double_play_643', 'throw_1b_out_runners_hold', 'throw_1b_out_runners_advance'],
+  'pitcher': ['throw_1b_out', 'throw_2b_out', 'throw_3b_out', 'throw_home_out', 'tag_runner_between_bases', 'double_play_163', 'throw_1b_out_runners_hold', 'throw_1b_out_runners_advance', 'overthrow_1b_backup', 'catch_popup_3b_covers'],
+  'catcher': ['throw_1b_out', 'throw_2b_out', 'throw_3b_out', 'step_on_home', 'tag_runner_at_home', 'throw_1b_out_runners_hold', 'throw_home_force', 'catcher_throw_cutoff'],
+  '1b': ['step_on_1b', 'tag_runner_at_1b', 'throw_2b_out', 'throw_3b_out', 'throw_home_out', 'double_play_363', 'throw_1b_out_runners_hold', 'throw_1b_pitcher_covers'],
+  '2b': ['step_on_2b', 'tag_runner_at_2b', 'throw_1b_out', 'throw_3b_out', 'throw_home_out', 'double_play_463', 'throw_1b_out_runners_hold', 'throw_1b_out_runners_advance', 'double_play_443'],
+  'ss': ['step_on_2b', 'tag_runner_at_2b', 'throw_1b_out', 'throw_3b_out', 'throw_home_out', 'double_play_643', 'throw_1b_out_runners_hold', 'throw_1b_out_runners_advance', 'steal_3b_backup'],
   '3b': ['step_on_3b', 'tag_runner_at_3b', 'throw_1b_out', 'throw_2b_out', 'throw_home_out', 'double_play_543', 'throw_1b_out_runners_hold'],
-  'lf': ['catch_fly_ball', 'throw_2b_out', 'throw_3b_out', 'throw_home_out', 'runners_advance_all', 'outfielder_throw_cutoff'],
-  'cf': ['catch_fly_ball', 'throw_2b_out', 'throw_3b_out', 'throw_home_out', 'runners_advance_all', 'outfielder_throw_cutoff'],
-  'rf': ['catch_fly_ball', 'throw_1b_out', 'throw_2b_out', 'throw_home_out', 'runners_advance_all', 'outfielder_throw_cutoff']
+  'lf': ['catch_fly_ball', 'throw_2b_out', 'throw_3b_out', 'throw_home_out', 'runners_advance_all', 'outfielder_throw_cutoff', 'catch_cf_lf_backup', 'double_play_fly_out_home'],
+  'cf': ['catch_fly_ball', 'throw_2b_out', 'throw_3b_out', 'throw_home_out', 'runners_advance_all', 'outfielder_throw_cutoff', 'double_play_fly_out_home'],
+  'rf': ['catch_fly_ball', 'throw_1b_out', 'throw_2b_out', 'throw_home_out', 'runners_advance_all', 'outfielder_throw_cutoff', 'catch_cf_rf_backup', 'double_play_fly_out_home']
 };
 
 const HIT_PRESETS = [
@@ -76,6 +76,7 @@ const OUTCOME_PRESETS = [
     type: 'throw',
     description: 'Fielder throws to 1st base to retire the batter-runner.',
     steps: [
+      { type: 'fielder_move_role', role: '1b', targetBase: '1b', duration: 250 },
       { type: 'status', text: 'THROWING TO 1ST BASE FOR THE OUT!' },
       { type: 'ball_throw', targetBase: '1b', duration: 400 },
       { type: 'catch_sound' },
@@ -92,6 +93,7 @@ const OUTCOME_PRESETS = [
     type: 'throw',
     description: 'Fielder throws to 2nd base to get the lead runner.',
     steps: [
+      { type: 'fielder_move_role', role: '2b', targetBase: '2b', duration: 250 },
       { type: 'status', text: 'THROWING TO 2ND BASE FOR THE FORCE OUT!' },
       { type: 'ball_throw', targetBase: '2b', duration: 400 },
       { type: 'catch_sound' },
@@ -108,6 +110,7 @@ const OUTCOME_PRESETS = [
     type: 'throw',
     description: 'Fielder throws to 3rd base to get the lead runner.',
     steps: [
+      { type: 'fielder_move_role', role: '3b', targetBase: '3b', duration: 250 },
       { type: 'status', text: 'THROWING TO 3RD BASE FOR THE FORCE OUT!' },
       { type: 'ball_throw', targetBase: '3b', duration: 400 },
       { type: 'catch_sound' },
@@ -124,6 +127,7 @@ const OUTCOME_PRESETS = [
     type: 'throw',
     description: 'Fielder throws to Home plate to get the runner scoring.',
     steps: [
+      { type: 'fielder_move_role', role: 'catcher', targetBase: 'home', duration: 250 },
       { type: 'status', text: 'THROWING TO HOME PLATE!' },
       { type: 'ball_throw', targetBase: 'home', duration: 400 },
       { type: 'catch_sound' },
@@ -434,6 +438,7 @@ const OUTCOME_PRESETS = [
       { type: 'flash_base', base: '2b' },
       { type: 'runner_out', runnerId: 'runner-1b' },
       { type: 'status', text: 'FORCE OUT AT 2ND! SS THROWS TO 1ST!' },
+      { type: 'fielder_move_role', role: '1b', targetBase: '1b', duration: 250 },
       { type: 'wait', duration: 100 },
       { type: 'ball_throw_from_base', fromBase: '2b', targetBase: '1b', duration: 300 },
       { type: 'catch_sound' },
@@ -450,6 +455,7 @@ const OUTCOME_PRESETS = [
     type: 'throw',
     description: 'Fielder throws to 1B for the out; other runners return to their bases.',
     steps: [
+      { type: 'fielder_move_role', role: '1b', targetBase: '1b', duration: 250 },
       { type: 'status', text: 'THROWING TO 1ST BASE! RUNNERS RETREAT!' },
       { type: 'ball_throw', targetBase: '1b', duration: 400 },
       { type: 'catch_sound' },
@@ -466,6 +472,7 @@ const OUTCOME_PRESETS = [
     type: 'throw',
     description: 'Fielder throws to 1B for the out; other runners advance.',
     steps: [
+      { type: 'fielder_move_role', role: '1b', targetBase: '1b', duration: 250 },
       { type: 'status', text: 'THROWING TO 1ST BASE! RUNNERS ADVANCING!' },
       { type: 'ball_throw', targetBase: '1b', duration: 400 },
       { type: 'catch_sound' },
@@ -501,6 +508,174 @@ const OUTCOME_PRESETS = [
       { type: 'dust', base: 'home', count: 8 },
       { type: 'cheer_sound', duration: 3, volume: 0.35 },
       { type: 'status', text: 'SAFE AT HOME! RBI SINGLE!' }
+    ]
+  },
+  {
+    id: 'double_play_443',
+    name: '4-4-3 Double Play',
+    type: 'double_play',
+    description: '2nd baseman fields, steps on 2B, and throws to 1B.',
+    steps: [
+      { type: 'status', text: '2B FIELDS AND RUNS TO 2ND BASE!' },
+      { type: 'fielder_move', targetBase: '2b', duration: 300 },
+      { type: 'catch_sound' },
+      { type: 'flash_base', base: '2b' },
+      { type: 'runner_out', runnerId: 'runner-1b' },
+      { type: 'status', text: 'FORCE OUT AT 2ND! THROW TO 1ST!' },
+      { type: 'wait', duration: 100 },
+      { type: 'ball_throw', targetBase: '1b', duration: 300 },
+      { type: 'catch_sound' },
+      { type: 'flash_base', base: '1b' },
+      { type: 'dust', base: '1b', count: 8 },
+      { type: 'runner_out', runnerId: 'player' },
+      { type: 'cheer_sound', duration: 3, volume: 0.4 },
+      { type: 'status', text: 'DOUBLE PLAY! 4-4-3 DP!' }
+    ]
+  },
+  {
+    id: 'throw_1b_pitcher_covers',
+    name: 'Throw to 1B (Pitcher covers)',
+    type: 'throw',
+    description: 'Fielder tosses to the pitcher covering 1B.',
+    steps: [
+      { type: 'fielder_move_role', role: 'pitcher', targetBase: '1b', duration: 300 },
+      { type: 'status', text: 'TOSSING TO PITCHER COVERING 1ST BASE!' },
+      { type: 'ball_throw', targetBase: '1b', duration: 300 },
+      { type: 'catch_sound' },
+      { type: 'flash_base', base: '1b' },
+      { type: 'dust', base: '1b', count: 8 },
+      { type: 'runner_out', runnerId: 'player' },
+      { type: 'cheer_sound', duration: 2, volume: 0.25 },
+      { type: 'status', text: 'OUT AT 1ST! PITCHER COVERED THE BAG!' }
+    ]
+  },
+  {
+    id: 'throw_home_force',
+    name: 'Throw home for force',
+    type: 'force',
+    description: 'Fielder throws to catcher covering home plate for the force out.',
+    steps: [
+      { type: 'fielder_move_role', role: 'catcher', targetBase: 'home', duration: 250 },
+      { type: 'status', text: 'THROWING TO HOME PLATE FOR THE FORCE!' },
+      { type: 'ball_throw', targetBase: 'home', duration: 300 },
+      { type: 'catch_sound' },
+      { type: 'flash_base', base: 'home' },
+      { type: 'dust', base: 'home', count: 10 },
+      { type: 'runner_out', runnerId: 'runner-3b' },
+      { type: 'cheer_sound', duration: 2, volume: 0.25 },
+      { type: 'status', text: 'FORCE OUT AT HOME!' }
+    ]
+  },
+  {
+    id: 'catcher_throw_cutoff',
+    name: 'Catcher throw to cutoff',
+    type: 'throw',
+    description: 'Catcher throws to the shortstop cutting in to prevent the double steal.',
+    steps: [
+      { type: 'fielder_move_role', role: 'ss', targetBase: '2b', duration: 250 },
+      { type: 'status', text: 'THROWING SHORT TO SS TO CUT OFF THE RUNNER!' },
+      { type: 'ball_throw', targetBase: '2b', duration: 300 },
+      { type: 'catch_sound' },
+      { type: 'flash_base', base: '2b' },
+      { type: 'runners_return', runnerList: ['runner-1b'], duration: 400 },
+      { type: 'status', text: 'SS CUTS OFF THROW! RUNNERS HOLD!' }
+    ]
+  },
+  {
+    id: 'overthrow_1b_backup',
+    name: 'Overthrow at 1B (Pitcher backs up)',
+    type: 'throw',
+    description: 'SS throws wide to 1B, but the pitcher backs up the throw, preventing the runner from advancing further.',
+    steps: [
+      { type: 'fielder_move_role', role: 'pitcher', targetBase: '1b', duration: 300 },
+      { type: 'status', text: 'SS THROWS WIDE! OVERTHROW AT 1ST BASE!' },
+      { type: 'ball_throw', targetBase: '1b', duration: 350 },
+      { type: 'flash_base', base: '1b' },
+      { type: 'wait', duration: 100 },
+      { type: 'ball_throw_from_base', fromBase: '1b', targetBase: 'home', duration: 300 },
+      { type: 'status', text: 'PITCHER BACKS UP THE THROW!' },
+      { type: 'runners_advance', runnerList: ['runner-2b'], duration: 500 },
+      { type: 'status', text: 'BATTER SAFE AT 1B. RUNNER HELD AT 3RD!' }
+    ]
+  },
+  {
+    id: 'steal_3b_backup',
+    name: 'Steal at 3B (SS backs up)',
+    type: 'tag',
+    description: 'Catcher throws to 3B to tag the stealing runner. SS backs up the play.',
+    steps: [
+      { type: 'fielder_move_role', role: 'ss', targetBase: '3b', duration: 300 },
+      { type: 'status', text: 'CATCHER THROWS TO 3B! SS BACKS UP!' },
+      { type: 'ball_throw', targetBase: '3b', duration: 300 },
+      { type: 'catch_sound' },
+      { type: 'flash_base', base: '3b' },
+      { type: 'runner_out', runnerId: 'runner-2b' },
+      { type: 'cheer_sound', duration: 2, volume: 0.25 },
+      { type: 'status', text: 'OUT AT 3RD BASE! STEAL PREVENTED!' }
+    ]
+  },
+  {
+    id: 'catch_cf_rf_backup',
+    name: 'CF catches fly ball (RF backs up)',
+    type: 'catch',
+    description: 'Center fielder catches the fly ball, while the right fielder backs up the play.',
+    steps: [
+      { type: 'fielder_move_role', role: 'cf', targetBase: 'cf', duration: 200 },
+      { type: 'fielder_move_role', role: 'rf', targetBase: 'cf', duration: 300 },
+      { type: 'status', text: 'CF CALLS FOR IT AND CATCHES THE BALL!' },
+      { type: 'catch_sound' },
+      { type: 'cheer_sound', duration: 2, volume: 0.25 },
+      { type: 'runner_out', runnerId: 'player' },
+      { type: 'status', text: 'FLY BALL CAUGHT BY CF! OUT!' }
+    ]
+  },
+  {
+    id: 'catch_cf_lf_backup',
+    name: 'CF catches fly ball (LF backs up)',
+    type: 'catch',
+    description: 'Center fielder catches the fly ball, while the left fielder backs up the play.',
+    steps: [
+      { type: 'fielder_move_role', role: 'cf', targetBase: 'cf', duration: 200 },
+      { type: 'fielder_move_role', role: 'lf', targetBase: 'cf', duration: 300 },
+      { type: 'status', text: 'CF CALLS FOR IT AND CATCHES THE BALL!' },
+      { type: 'catch_sound' },
+      { type: 'cheer_sound', duration: 2, volume: 0.25 },
+      { type: 'runner_out', runnerId: 'player' },
+      { type: 'status', text: 'FLY BALL CAUGHT BY CF! OUT!' }
+    ]
+  },
+  {
+    id: 'catch_popup_3b_covers',
+    name: '3B catches popup (Pitcher calls off)',
+    type: 'catch',
+    description: '3rd baseman catches the pop-up over the mound, while the pitcher yields.',
+    steps: [
+      { type: 'fielder_move_role', role: '3b', targetBase: 'pitcher', duration: 300 },
+      { type: 'status', text: '3B CALLS MINE AND CATCHES THE POP-UP!' },
+      { type: 'catch_sound' },
+      { type: 'cheer_sound', duration: 2, volume: 0.25 },
+      { type: 'runner_out', runnerId: 'player' },
+      { type: 'status', text: 'POP-UP CAUGHT BY 3RD BASEMAN!' }
+    ]
+  },
+  {
+    id: 'double_play_fly_out_home',
+    name: 'Fly Out + Out at Home Double Play',
+    type: 'double_play',
+    description: 'Outfielder catches the fly ball and throws home to tag the tagging runner.',
+    steps: [
+      { type: 'fielder_move_role', role: 'catcher', targetBase: 'home', duration: 250 },
+      { type: 'status', text: 'FLY BALL CAUGHT! THROWING HOME!' },
+      { type: 'catch_sound' },
+      { type: 'runner_out', runnerId: 'player' },
+      { type: 'wait', duration: 150 },
+      { type: 'ball_throw', targetBase: 'home', duration: 350 },
+      { type: 'catch_sound' },
+      { type: 'flash_base', base: 'home' },
+      { type: 'dust_runner', runnerId: 'runner-3b', count: 10 },
+      { type: 'runner_out', runnerId: 'runner-3b' },
+      { type: 'cheer_sound', duration: 3, volume: 0.4 },
+      { type: 'status', text: 'DOUBLE PLAY! CAUGHT FLY AND OUT AT HOME!' }
     ]
   }
 ];
