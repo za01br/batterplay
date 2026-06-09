@@ -69,27 +69,35 @@
 
     @keyframes you-glow-pulse {
       0%, 100% {
-        opacity: 0.35;
+        opacity: 0.3;
         stroke: #f0e040;
         filter: drop-shadow(0 0 1px rgba(240, 224, 64, 0.4));
       }
       50% {
         opacity: 1;
         stroke: #ffffff;
-        filter: drop-shadow(0 0 6px rgba(240, 224, 64, 0.8));
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
       }
     }
     @keyframes you-text-bob {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-4px); }
     }
+    @keyframes you-text-blink {
+      0%, 100% { fill: #f0e040; }
+      50% { fill: #ffffff; }
+    }
     
     .you-glow {
-      animation: you-glow-pulse 1.4s infinite ease-in-out;
+      animation: you-glow-pulse 0.8s infinite ease-in-out;
     }
     .you-text {
-      animation: you-text-bob 1.4s infinite ease-in-out;
+      animation: you-text-bob 1.2s infinite ease-in-out, you-text-blink 0.8s infinite ease-in-out;
+      transform-origin: 0px -66px;
       paint-order: stroke fill;
+      fill: #f0e040 !important;
+      stroke: #000000 !important;
+      stroke-width: 1px !important;
     }
     
     /* Scrollbar styling */

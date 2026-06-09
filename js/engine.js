@@ -898,6 +898,37 @@ const AnimationEngine = {
 
           await Promise.all(advancePromises);
           break;
+
+        case 'runners_return':
+          // Returns the specified runners from their halfway positions back to their starting bases
+          const returnPromises = [];
+          step.runnerList.forEach(runnerId => {
+            const runnerEl = document.getElementById(runnerId);
+            if (runnerEl && runnerEl.getAttribute('opacity') === '1') {
+              const baseTo = runnerId.replace('runner-', '');
+              let baseFrom = '1b';
+              if (baseTo === '1b') baseFrom = '2b';
+              else if (baseTo === '2b') baseFrom = '3b';
+              else if (baseTo === '3b') baseFrom = 'home';
+
+              const startCoords = BASE_POSITIONS[baseFrom];
+              const endCoords = BASE_POSITIONS[baseTo];
+              const halfwayCoords = {
+                x: this.lerp(endCoords.x, startCoords.x, 0.5),
+                y: this.lerp(endCoords.y, startCoords.y, 0.5)
+              };
+
+              returnPromises.push(this.animate(step.duration || 500, t => {
+                const x = this.lerp(halfwayCoords.x, endCoords.x, t);
+                const y = this.lerp(halfwayCoords.y, endCoords.y, t);
+                const bob = Math.sin(t * 10) * 1.5;
+                const scale = this.getScaleForY(y);
+                runnerEl.setAttribute('transform', `translate(${x},${y + bob}) scale(${scale})`);
+              }));
+            }
+          });
+          await Promise.all(returnPromises);
+          break;
       }
     }
     

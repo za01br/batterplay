@@ -84,10 +84,14 @@ function onRoleChanged() {
   if (parentG) {
     parentG.appendChild(glow);
     parentG.appendChild(text);
+    glow.setAttribute('display', 'inline');
+    text.setAttribute('display', 'inline');
     glow.setAttribute('opacity', '1');
     text.setAttribute('opacity', '1');
     text.setAttribute('y', String(textY));
   } else {
+    glow.setAttribute('display', 'none');
+    text.setAttribute('display', 'none');
     glow.setAttribute('opacity', '0');
     text.setAttribute('opacity', '0');
   }
@@ -139,6 +143,18 @@ async function previewPlay() {
   };
 
   try {
+    // Hide YOU indicators during play preview animation
+    const glow = document.getElementById('you-glow');
+    const text = document.getElementById('you-text');
+    if (glow) {
+      glow.setAttribute('display', 'none');
+      glow.setAttribute('opacity', '0');
+    }
+    if (text) {
+      text.setAttribute('display', 'none');
+      text.setAttribute('opacity', '0');
+    }
+
     // 1. Run Pitch + Hit + Field
     await AnimationEngine.triggerPitch(role, hitPreset, runners, async () => {
       // Get the quiz inputs from the form

@@ -21,16 +21,16 @@ const BASE_COORDS = {
 };
 
 const ROLE_ALLOWED_OUTCOMES = {
-  'hitter': ['runner_scores_3b', 'runner_advances_3b', 'runners_advance_all', 'batter_safe_1b'],
-  'pitcher': ['throw_1b_out', 'throw_2b_out', 'throw_3b_out', 'throw_home_out', 'tag_runner_between_bases'],
-  'catcher': ['throw_1b_out', 'throw_2b_out', 'throw_3b_out', 'step_on_home', 'tag_runner_at_home'],
-  '1b': ['step_on_1b', 'tag_runner_at_1b', 'throw_2b_out', 'throw_3b_out', 'throw_home_out'],
-  '2b': ['step_on_2b', 'tag_runner_at_2b', 'throw_1b_out', 'throw_3b_out', 'throw_home_out', 'double_play_463'],
-  'ss': ['step_on_2b', 'tag_runner_at_2b', 'throw_1b_out', 'throw_3b_out', 'throw_home_out', 'double_play_643'],
-  '3b': ['step_on_3b', 'tag_runner_at_3b', 'throw_1b_out', 'throw_2b_out', 'throw_home_out', 'double_play_543'],
-  'lf': ['catch_fly_ball', 'throw_2b_out', 'throw_3b_out', 'throw_home_out', 'runners_advance_all'],
-  'cf': ['catch_fly_ball', 'throw_2b_out', 'throw_3b_out', 'throw_home_out', 'runners_advance_all'],
-  'rf': ['catch_fly_ball', 'throw_1b_out', 'throw_2b_out', 'throw_home_out', 'runners_advance_all']
+  'hitter': ['runner_scores_3b', 'runner_advances_3b', 'runners_advance_all', 'batter_safe_1b', 'runner_scores_2b', 'throw_1b_out_runners_advance', 'throw_1b_out_runners_hold'],
+  'pitcher': ['throw_1b_out', 'throw_2b_out', 'throw_3b_out', 'throw_home_out', 'tag_runner_between_bases', 'double_play_163', 'throw_1b_out_runners_hold', 'throw_1b_out_runners_advance'],
+  'catcher': ['throw_1b_out', 'throw_2b_out', 'throw_3b_out', 'step_on_home', 'tag_runner_at_home', 'throw_1b_out_runners_hold'],
+  '1b': ['step_on_1b', 'tag_runner_at_1b', 'throw_2b_out', 'throw_3b_out', 'throw_home_out', 'double_play_363', 'throw_1b_out_runners_hold'],
+  '2b': ['step_on_2b', 'tag_runner_at_2b', 'throw_1b_out', 'throw_3b_out', 'throw_home_out', 'double_play_463', 'throw_1b_out_runners_hold', 'throw_1b_out_runners_advance'],
+  'ss': ['step_on_2b', 'tag_runner_at_2b', 'throw_1b_out', 'throw_3b_out', 'throw_home_out', 'double_play_643', 'throw_1b_out_runners_hold', 'throw_1b_out_runners_advance'],
+  '3b': ['step_on_3b', 'tag_runner_at_3b', 'throw_1b_out', 'throw_2b_out', 'throw_home_out', 'double_play_543', 'throw_1b_out_runners_hold'],
+  'lf': ['catch_fly_ball', 'throw_2b_out', 'throw_3b_out', 'throw_home_out', 'runners_advance_all', 'outfielder_throw_cutoff'],
+  'cf': ['catch_fly_ball', 'throw_2b_out', 'throw_3b_out', 'throw_home_out', 'runners_advance_all', 'outfielder_throw_cutoff'],
+  'rf': ['catch_fly_ball', 'throw_1b_out', 'throw_2b_out', 'throw_home_out', 'runners_advance_all', 'outfielder_throw_cutoff']
 };
 
 const HIT_PRESETS = [
@@ -393,6 +393,109 @@ const OUTCOME_PRESETS = [
       { type: 'runner_out', runnerId: 'player' },
       { type: 'cheer_sound', duration: 3, volume: 0.4 },
       { type: 'status', text: 'DOUBLE PLAY! 5-4-3 DP!' }
+    ]
+  },
+  {
+    id: 'double_play_163',
+    name: '1-6-3 Double Play',
+    type: 'double_play',
+    description: 'Pitcher throws to Shortstop, who throws to 1st base.',
+    steps: [
+      { type: 'status', text: 'PITCHER FIELDS AND THROWS TO SS!' },
+      { type: 'ball_throw', targetBase: '2b', duration: 300 },
+      { type: 'catch_sound' },
+      { type: 'flash_base', base: '2b' },
+      { type: 'runner_out', runnerId: 'runner-1b' },
+      { type: 'status', text: 'FORCE OUT AT 2ND! SS THROWS TO 1ST!' },
+      { type: 'wait', duration: 100 },
+      { type: 'ball_throw_from_base', fromBase: '2b', targetBase: '1b', duration: 300 },
+      { type: 'catch_sound' },
+      { type: 'flash_base', base: '1b' },
+      { type: 'dust', base: '1b', count: 8 },
+      { type: 'runner_out', runnerId: 'player' },
+      { type: 'cheer_sound', duration: 3, volume: 0.4 },
+      { type: 'status', text: 'DOUBLE PLAY! 1-6-3 DP!' }
+    ]
+  },
+  {
+    id: 'double_play_363',
+    name: '3-6-3 Double Play',
+    type: 'double_play',
+    description: '1st baseman throws to Shortstop, who throws back to 1st base.',
+    steps: [
+      { type: 'status', text: '1B FIELDS AND THROWS TO SS!' },
+      { type: 'ball_throw', targetBase: '2b', duration: 300 },
+      { type: 'catch_sound' },
+      { type: 'flash_base', base: '2b' },
+      { type: 'runner_out', runnerId: 'runner-1b' },
+      { type: 'status', text: 'FORCE OUT AT 2ND! SS THROWS TO 1ST!' },
+      { type: 'wait', duration: 100 },
+      { type: 'ball_throw_from_base', fromBase: '2b', targetBase: '1b', duration: 300 },
+      { type: 'catch_sound' },
+      { type: 'flash_base', base: '1b' },
+      { type: 'dust', base: '1b', count: 8 },
+      { type: 'runner_out', runnerId: 'player' },
+      { type: 'cheer_sound', duration: 3, volume: 0.4 },
+      { type: 'status', text: 'DOUBLE PLAY! 3-6-3 DP!' }
+    ]
+  },
+  {
+    id: 'throw_1b_out_runners_hold',
+    name: 'Throw to 1B (Runners Hold)',
+    type: 'throw',
+    description: 'Fielder throws to 1B for the out; other runners return to their bases.',
+    steps: [
+      { type: 'status', text: 'THROWING TO 1ST BASE! RUNNERS RETREAT!' },
+      { type: 'ball_throw', targetBase: '1b', duration: 400 },
+      { type: 'catch_sound' },
+      { type: 'flash_base', base: '1b' },
+      { type: 'runner_out', runnerId: 'player' },
+      { type: 'runners_return', runnerList: ['runner-1b', 'runner-2b', 'runner-3b'], duration: 500 },
+      { type: 'cheer_sound', duration: 2, volume: 0.25 },
+      { type: 'status', text: 'OUT AT 1ST! RUNNERS HELD SAFELY.' }
+    ]
+  },
+  {
+    id: 'throw_1b_out_runners_advance',
+    name: 'Throw to 1B (Runners Advance)',
+    type: 'throw',
+    description: 'Fielder throws to 1B for the out; other runners advance.',
+    steps: [
+      { type: 'status', text: 'THROWING TO 1ST BASE! RUNNERS ADVANCING!' },
+      { type: 'ball_throw', targetBase: '1b', duration: 400 },
+      { type: 'catch_sound' },
+      { type: 'flash_base', base: '1b' },
+      { type: 'runner_out', runnerId: 'player' },
+      { type: 'runners_advance', runnerList: ['runner-1b', 'runner-2b', 'runner-3b'], duration: 600 },
+      { type: 'cheer_sound', duration: 2, volume: 0.25 },
+      { type: 'status', text: 'OUT AT 1ST! OTHER RUNNERS ADVANCE.' }
+    ]
+  },
+  {
+    id: 'outfielder_throw_cutoff',
+    name: 'Throw to Cutoff',
+    type: 'throw',
+    description: 'Outfielder throws to the cutoff man in the infield; runners hold.',
+    steps: [
+      { type: 'status', text: 'THROWING TO THE INFIELD CUTOFF MAN!' },
+      { type: 'ball_throw', targetBase: '2b', duration: 450 },
+      { type: 'catch_sound' },
+      { type: 'runners_return', runnerList: ['runner-1b', 'runner-2b', 'runner-3b'], duration: 400 },
+      { type: 'status', text: 'CUTOFF MAN RECEIVES BALL. RUNNERS HOLD!' }
+    ]
+  },
+  {
+    id: 'runner_scores_2b',
+    name: 'Runner scores from 2B',
+    type: 'advance',
+    description: 'The runner on 2nd base runs home and scores.',
+    steps: [
+      { type: 'status', text: 'RUNNER ON 2ND BASE SPEEDS AROUND 3RD!' },
+      { type: 'runners_advance', runnerList: ['runner-2b'], duration: 800 },
+      { type: 'flash_base', base: 'home' },
+      { type: 'dust', base: 'home', count: 8 },
+      { type: 'cheer_sound', duration: 3, volume: 0.35 },
+      { type: 'status', text: 'SAFE AT HOME! RBI SINGLE!' }
     ]
   }
 ];

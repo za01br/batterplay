@@ -353,6 +353,18 @@
       margin-top: 30px;
       position: relative;
     }
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      width: 100%;
+    }
+    .select-role-btn {
+      padding: 10px 4px;
+      font-size: 7px;
+      letter-spacing: 1px;
+      width: auto !important;
+    }
 
     .menu-title {
       font-size: 16px;
@@ -442,14 +454,14 @@
 
     @keyframes you-glow-pulse {
       0%, 100% {
-        opacity: 0.35;
+        opacity: 0.3;
         stroke: #f0e040;
         filter: drop-shadow(0 0 1px rgba(240, 224, 64, 0.4));
       }
       50% {
         opacity: 1;
         stroke: #ffffff;
-        filter: drop-shadow(0 0 6px rgba(240, 224, 64, 0.8));
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
       }
     }
     @keyframes you-text-bob {
@@ -460,12 +472,24 @@
         transform: translateY(-4px);
       }
     }
-    #fielder-3b-you-glow {
-      animation: you-glow-pulse 1.4s infinite ease-in-out;
+    @keyframes you-text-blink {
+      0%, 100% {
+        fill: #f0e040;
+      }
+      50% {
+        fill: #ffffff;
+      }
     }
-    #fielder-3b-you-text {
-      animation: you-text-bob 1.4s infinite ease-in-out;
+    .you-glow {
+      animation: you-glow-pulse 0.8s infinite ease-in-out;
+    }
+    .you-text {
+      animation: you-text-bob 1.2s infinite ease-in-out, you-text-blink 0.8s infinite ease-in-out;
       transform-origin: 0px -66px;
+      paint-order: stroke fill;
+      fill: #f0e040 !important;
+      stroke: #000000 !important;
+      stroke-width: 1px !important;
     }
   </style>
 </head>
@@ -476,14 +500,24 @@
   <div id="menu-screen">
     <div class="menu-title">BATTERPLAY</div>
     <div class="menu-subtitle">SELECT YOUR ROLE</div>
-    <button class="menu-btn" onclick="selectRole('3rd_base')">🧤 3RD BASE</button>
-    <button class="menu-btn" onclick="selectRole('hitter')">🥎 HITTER</button>
-    <button class="menu-btn" onclick="toggleCustomDrillsMenu()">📋 CUSTOM DRILLS</button>
+    <div class="roles-grid">
+      <button class="menu-btn select-role-btn" onclick="selectRole('hitter')">🥎 HITTER</button>
+      <button class="menu-btn select-role-btn" onclick="selectRole('pitcher')">⚾ PITCHER</button>
+      <button class="menu-btn select-role-btn" onclick="selectRole('catcher')">🧤 CATCHER</button>
+      <button class="menu-btn select-role-btn" onclick="selectRole('1b')">🧤 1ST BASE</button>
+      <button class="menu-btn select-role-btn" onclick="selectRole('2b')">🧤 2ND BASE</button>
+      <button class="menu-btn select-role-btn" onclick="selectRole('3b')">🧤 3RD BASE</button>
+      <button class="menu-btn select-role-btn" onclick="selectRole('ss')">🧤 SHORTSTOP</button>
+      <button class="menu-btn select-role-btn" onclick="selectRole('lf')">🧤 LEFT FLD</button>
+      <button class="menu-btn select-role-btn" onclick="selectRole('cf')">🧤 CENTER FLD</button>
+      <button class="menu-btn select-role-btn" onclick="selectRole('rf')">🧤 RIGHT FLD</button>
+    </div>
+    <button class="menu-btn" onclick="toggleCustomDrillsMenu()" style="margin-top: 8px;">📋 CUSTOM DRILLS</button>
     <!-- Custom Drills Submenu -->
     <div id="custom-drills-list" style="display: none; width: 100%; max-height: 150px; overflow-y: auto; margin-top: 10px; border: 2px dashed #2ecc71; padding: 8px; background: #081208;">
       <!-- Populated via JS -->
     </div>
-    <button class="menu-btn" onclick="window.location.href='creator.html'" style="background: #050e1a; border-color: #2980b9; color: #7ec8e3; box-shadow: 4px 4px 0 #154b6e; margin-top: 14px;">🎨 CREATE DRILLS</button>
+    <button class="menu-btn" onclick="window.location.href='creator.html'" style="background: #050e1a; border-color: #2980b9; color: #7ec8e3; box-shadow: 4px 4px 0 #154b6e;">🎨 CREATE DRILLS</button>
   </div>
 
   <!-- ============ GAMEPLAY SCREEN ============ -->
@@ -1103,7 +1137,7 @@
   <script src="js/presets.js?v=1.4"></script>
   <script src="js/engine.js?v=1.4"></script>
   <script>
-    const PLAYER_SCALE = 0.75;
+    // PLAYER_SCALE is already defined in js/engine.js
 
     // ============================================================
     // SCENARIOS DATA
@@ -1111,323 +1145,1311 @@
     const HITTER_SCENARIOS = [
       {
         id: 1,
-        title: "SCENARIO 001",
-        situation: "Runner on 3rd, Less Than 2 Outs",
-        details: "There is a runner on 3rd base and only 1 out. Your team is tied.",
-        question: "What should you try to do?",
+        title: "HITTER 001",
+        situation: "Runner on 1st, No Outs",
+        details: "Runner on 1st base, no outs, early innings. You want to avoid hitting into a double play.",
+        question: "What is your best batting approach?",
         choices: [
           "Swing as hard as possible for a home run.",
-          "Put the ball in play to score the runner.",
-          "Try to strike out looking."
+          "Look for a pitch to drive into the outfield; avoid reaching for low, outside pitches.",
+          "Take three pitches in a row."
         ],
         correctIndex: 1,
-        why: "Why: A ground ball, fly ball, or line drive can score the runner.",
-        runners: ['3b']
+        why: "Why: Ground balls in the middle of the field are easy double plays. Looking for a pitch to drive helps you hit to the outfield.",
+        runners: ['1b'],
+        role: "hitter",
+        hitPresetId: "liner_cf",
+        outcomePresetId: "batter_safe_1b"
       },
       {
         id: 2,
-        title: "SCENARIO 002",
-        situation: "Runner on 2nd, No Outs",
-        details: "Your teammate is on 2nd base and nobody is out.",
-        question: "What helps your team most?",
+        title: "HITTER 002",
+        situation: "Runner on 3rd, 1 Out",
+        details: "There is a runner on 3rd base and only 1 out. Your team is tied.",
+        question: "How can you guarantee the runner scores from 3rd base?",
         choices: [
-          "Hit the ball to the right side to move the runner to 3rd.",
-          "Try to bunt foul.",
-          "Take three strikes."
+          "Swing and miss on purpose.",
+          "Try to bunt it foul.",
+          "Put the ball in play in the air to the outfield, or hit a grounder to the right side of the infield."
         ],
-        correctIndex: 0,
-        why: "Why: Advancing the runner to 3rd gives your team a great chance to score.",
-        runners: ['2b']
+        correctIndex: 2,
+        why: "Why: An outfield fly ball lets the runner tag up, and a grounder to the right side forces a throw to 1B, giving the runner time to score.",
+        runners: ['3b'],
+        role: "hitter",
+        hitPresetId: "fly_rf",
+        outcomePresetId: "runner_scores_3b"
       },
       {
         id: 3,
-        title: "SCENARIO 003",
-        situation: "Two Outs, Runner on 2nd",
-        details: "There are 2 outs and a runner on 2nd.",
-        question: "What should you focus on?",
+        title: "HITTER 003",
+        situation: "Runner on 2nd, No Outs",
+        details: "Your teammate is on 2nd base and nobody is out.",
+        question: "Where should you try to hit the ball to help the runner advance to 3rd?",
         choices: [
-          "Getting on base or getting a hit.",
-          "Bunting.",
-          "Letting every pitch go by."
+          "Aim to hit or pull the ball to the right side of the infield or outfield.",
+          "Bunt down the third base line.",
+          "Strike out looking."
         ],
         correctIndex: 0,
-        why: "Why: With two outs, the runner is moving on contact, so any hit can score them.",
-        runners: ['2b']
+        why: "Why: Hitting the ball to the right side of the field forces the defense to make a play behind the runner, allowing them to advance to 3rd base easily.",
+        runners: ['2b'],
+        role: "hitter",
+        hitPresetId: "grounder_2b",
+        outcomePresetId: "runner_advances_3b"
       },
       {
         id: 4,
-        title: "SCENARIO 004",
-        situation: "Bases Loaded, One Out",
-        details: "Bases are loaded with 1 out.",
-        question: "What is a smart goal?",
+        title: "HITTER 004",
+        situation: "Bases Loaded, 2 Outs",
+        details: "The bases are loaded and there are 2 outs.",
+        question: "What should your batting mentality be in this high-pressure situation?",
         choices: [
-          "Hit a fly ball or hard ground ball to score a run.",
-          "Strike out swinging.",
-          "Hit a pop-up in the infield."
+          "Be highly aggressive on strikes, look for a pitch to drive, and run hard on any contact.",
+          "Bunt to the pitcher.",
+          "Let every pitch go by to walk."
         ],
         correctIndex: 0,
-        why: "Why: A fly ball can score a runner from 3rd, and a hard-hit ball may bring in multiple runs.",
-        runners: ['1b', '2b', '3b']
+        why: "Why: With two outs, runners move on contact. Any hit or walk scores runs immediately.",
+        runners: ['1b', '2b', '3b'],
+        role: "hitter",
+        hitPresetId: "liner_lf",
+        outcomePresetId: "runners_advance_all"
       },
       {
         id: 5,
-        title: "SCENARIO 005",
-        situation: "Runner on 1st, No Outs",
-        details: "Your teammate is on 1st and there are no outs.",
-        question: "What should you avoid?",
+        title: "HITTER 005",
+        situation: "Runners on 1st & 2nd, 1 Out",
+        details: "Runners on 1st and 2nd with 1 out. Your team is down by 2 runs.",
+        question: "What type of contact should you prioritize?",
         choices: [
-          "Hitting a ground ball to the shortstop or second baseman.",
-          "Hitting a line drive.",
-          "Hitting the ball to the outfield."
+          "Try to lay down a bunt.",
+          "Focus on hitting a line drive or finding a gap in the outfield; avoid bunts or soft choppers.",
+          "Hit a high popup to the catcher."
         ],
-        correctIndex: 0,
-        why: "Why: A ground ball in the middle infield can turn into a double play.",
-        runners: ['1b']
+        correctIndex: 1,
+        why: "Why: You need multiple runs, so hitting a line drive or finding gaps in the outfield keeps the rally going and puts runners in scoring position.",
+        runners: ['1b', '2b'],
+        role: "hitter",
+        hitPresetId: "liner_mid",
+        outcomePresetId: "runners_advance_all"
       },
       {
         id: 6,
-        title: "SCENARIO 006",
-        situation: "Winning Run on 3rd, Bottom of Last Inning",
-        details: "The game is tied. Winning run is on 3rd with less than 2 outs.",
-        question: "What is your job?",
+        title: "HITTER 006",
+        situation: "Winning Run on 3rd, 1 Out",
+        details: "Game is tied, bottom of the last inning, winning run is on 3rd with 1 out.",
+        question: "What is your primary goal?",
         choices: [
-          "Score the runner any way you can.",
           "Only swing for a home run.",
-          "Try to hit the ball directly to an infielder."
+          "Just put the ball in play anywhere out of the infield.",
+          "Try to strike out."
+        ],
+        correctIndex: 1,
+        why: "Why: Any deep fly ball or grounder out of the infield will score the winning run on a tag-up or fielder's choice.",
+        runners: ['3b'],
+        role: "hitter",
+        hitPresetId: "fly_cf",
+        outcomePresetId: "runner_scores_3b"
+      },
+      {
+        id: 7,
+        title: "HITTER 007",
+        situation: "No Runners, 2 Outs",
+        details: "No runners on base, 2 outs, and the pitcher is throwing slow and wild.",
+        question: "What is your batting discipline approach?",
+        choices: [
+          "Swing at every pitch anyway.",
+          "Be patient, take pitches until you get a strike, and walk if possible.",
+          "Bunt on the first pitch."
+        ],
+        correctIndex: 1,
+        why: "Why: Pitchers struggling with control will often walk you if you stay patient, getting a runner on base with 2 outs.",
+        runners: [],
+        role: "hitter",
+        hitPresetId: "liner_rf",
+        outcomePresetId: "batter_safe_1b"
+      }
+    ];
+
+    const PITCHER_SCENARIOS = [
+      {
+        id: 11,
+        title: "PITCHER 001",
+        situation: "Chopper Down 3B Line",
+        details: "No runners, no outs. A soft grounder is hit slowly down the 3rd base line.",
+        question: "Who should field the ball?",
+        choices: [
+          "Sprint and dive for it immediately, throwing wildly.",
+          "Let the 3rd baseman field it if they charge it; otherwise, field it and throw carefully to 1B.",
+          "Throw the ball to 3rd base."
+        ],
+        correctIndex: 1,
+        why: "Why: The 3B charges forward and has a much better angle for a clean throw than the pitcher running sideways.",
+        runners: [],
+        role: "pitcher",
+        hitPresetId: "bunt_3b",
+        outcomePresetId: "throw_1b_out"
+      },
+      {
+        id: 12,
+        title: "PITCHER 002",
+        situation: "Grounder Back to Mound",
+        details: "Runner on 1st, no outs. A hard grounder is hit straight back to you.",
+        question: "What is your play?",
+        choices: [
+          "Turn, throw to the shortstop covering 2nd base to start a double play.",
+          "Run to 1B yourself.",
+          "Hold the ball and make no throw."
         ],
         correctIndex: 0,
-        why: "Why: One run wins the game, so focus on bringing the runner home.",
-        runners: ['3b']
+        why: "Why: With a runner on 1st, the lead force play is at 2nd base. Throwing to the shortstop starts the double play.",
+        runners: ['1b'],
+        role: "pitcher",
+        hitPresetId: "grounder_p",
+        outcomePresetId: "double_play_163"
+      },
+      {
+        id: 13,
+        title: "PITCHER 003",
+        situation: "Bunt with Runner on 3rd",
+        details: "Runner on 3rd, 1 out. A soft bunt is hit right back to the mound, and the runner on 3rd breaks for home.",
+        question: "What do you do?",
+        choices: [
+          "Throw to 1B immediately without checking the runner.",
+          "Look the runner back to 3rd base, then throw to 1B to secure the sure out.",
+          "Chase the runner back to 3rd base."
+        ],
+        correctIndex: 1,
+        why: "Why: Looking the runner back prevents them from scoring while still securing the out at 1B.",
+        runners: ['3b'],
+        role: "pitcher",
+        hitPresetId: "bunt_p",
+        outcomePresetId: "throw_1b_out_runners_hold"
+      },
+      {
+        id: 14,
+        title: "PITCHER 004",
+        situation: "Pop-up Above Mound",
+        details: "Runners on 1st & 2nd, 1 out. A high pop-up is hit directly over the mound.",
+        question: "What is your best action?",
+        choices: [
+          "Call loudly for the catcher or third baseman to make the catch.",
+          "Catch it yourself while running backward off the mound.",
+          "Let the ball drop."
+        ],
+        correctIndex: 0,
+        why: "Why: Infielders running forward have a much better view and steadier footing than a pitcher on the mound.",
+        runners: ['1b', '2b'],
+        role: "pitcher",
+        hitPresetId: "popup_p",
+        outcomePresetId: "catch_popup"
+      },
+      {
+        id: 15,
+        title: "PITCHER 005",
+        situation: "Overthrow at 1B",
+        details: "Runner on 2nd, 2 outs. A grounder is hit to SS, who throws wide to 1B. The ball gets past the 1st baseman.",
+        question: "Where should the pitcher go?",
+        choices: [
+          "Stand on the mound and watch.",
+          "Sprint to back up the first baseman behind 1B.",
+          "Run to cover 2nd base."
+        ],
+        correctIndex: 1,
+        why: "Why: Backing up 1B prevents the runner on 2nd from scoring on overthrows, which are common in rec leagues.",
+        runners: ['2b'],
+        role: "pitcher",
+        hitPresetId: "grounder_ss",
+        outcomePresetId: "throw_1b_out_runners_advance"
+      },
+      {
+        id: 16,
+        title: "PITCHER 006",
+        situation: "Passed Ball, Cover Home",
+        details: "Runner on 3rd, 2 outs. A wild pitch gets past the catcher to the backstop.",
+        question: "What is your job?",
+        choices: [
+          "Sprint to cover home plate, facing the catcher to receive the throw.",
+          "Run to cover 3rd base.",
+          "Watch from the pitcher's mound."
+        ],
+        correctIndex: 0,
+        why: "Why: On passed balls with a runner on 3rd, the pitcher must cover home plate to receive the throw and tag the runner.",
+        runners: ['3b'],
+        role: "pitcher",
+        hitPresetId: "bunt_p",
+        outcomePresetId: "tag_runner_at_home"
+      },
+      {
+        id: 17,
+        title: "PITCHER 007",
+        situation: "Catch Line Drive, Double Play",
+        details: "Runner on 1st, 1 out. You catch a line drive hit right at you. The runner on 1st is halfway to 2nd.",
+        question: "What is your play?",
+        choices: [
+          "Throw immediately to 1B.",
+          "Throw to 2nd base.",
+          "Run to 1B myself."
+        ],
+        correctIndex: 0,
+        why: "Why: The runner left the base early. Throwing to 1B doubles them off for the second out.",
+        runners: ['1b'],
+        role: "pitcher",
+        hitPresetId: "popup_p",
+        outcomePresetId: "throw_1b_out_runners_hold"
+      }
+    ];
+
+    const CATCHER_SCENARIOS = [
+      {
+        id: 21,
+        title: "CATCHER 001",
+        situation: "Popup Behind Plate",
+        details: "Runner on 3rd, 1 out. A high popup is hit behind home plate near the backstop.",
+        question: "What do you do?",
+        choices: [
+          "Keep your mask on and run blindly.",
+          "Toss your mask aside, find the ball, catch it, and immediately check the runner on 3rd.",
+          "Let the pitcher catch it."
+        ],
+        correctIndex: 1,
+        why: "Why: Removing the mask improves vision. Checking the runner on 3rd prevents them from tagging up and scoring.",
+        runners: ['3b'],
+        role: "catcher",
+        hitPresetId: "popup_c",
+        outcomePresetId: "catch_popup"
+      },
+      {
+        id: 22,
+        title: "CATCHER 002",
+        situation: "Bunt, Force Play at 3rd",
+        details: "Runners on 1st & 2nd, no outs. Hitter bunts the ball right in front of home plate.",
+        question: "Where should you throw the ball?",
+        choices: [
+          "Throw to 1st base.",
+          "Field the ball and throw to the 3rd baseman covering 3rd base.",
+          "Throw to 2nd base."
+        ],
+        correctIndex: 1,
+        why: "Why: With runners on 1st and 2nd, there is a force play at 3B. A bunt near home is a short, easy throw to get the lead runner.",
+        runners: ['1b', '2b'],
+        role: "catcher",
+        hitPresetId: "bunt_p",
+        outcomePresetId: "throw_3b_out"
+      },
+      {
+        id: 23,
+        title: "CATCHER 003",
+        situation: "Uncaught Third Strike",
+        details: "No runners on base, 2 outs. The batter swings and misses at a pitch in the dirt for strike three.",
+        question: "What is the play?",
+        choices: [
+          "Celebrate the strikeout and walk to the dugout.",
+          "Retrieve the ball and throw it to 1st base (or tag the batter if close).",
+          "Throw the ball to 3rd base."
+        ],
+        correctIndex: 1,
+        why: "Why: On an uncaught third strike, the batter is not out and must be thrown out at 1B or tagged.",
+        runners: [],
+        role: "catcher",
+        hitPresetId: "bunt_p",
+        outcomePresetId: "throw_1b_out"
+      },
+      {
+        id: 24,
+        title: "CATCHER 004",
+        situation: "Play at Plate, Single to RF",
+        details: "Runner on 2nd, 1 out. A base hit goes to right field, and the runner rounds 3rd to score.",
+        question: "Where do you position yourself?",
+        choices: [
+          "Stand in the baseline blocking the runner without the ball.",
+          "Stand just in front of home plate, leaving a clear sliding path for the runner until you receive the ball.",
+          "Run out to meet the runner at 3B."
+        ],
+        correctIndex: 1,
+        why: "Why: Blocking the plate without the ball is obstruction. Leave a path, catch the ball, and then apply the tag.",
+        runners: ['2b'],
+        role: "catcher",
+        hitPresetId: "liner_rf",
+        outcomePresetId: "tag_runner_at_home"
+      },
+      {
+        id: 25,
+        title: "CATCHER 005",
+        situation: "Double Steal, Runners on 1st & 3rd",
+        details: "Runners on 1st & 3rd, 1 out. The runner on 1st attempts to steal 2nd base.",
+        question: "What is your decision?",
+        choices: [
+          "Throw all the way to 2nd base immediately.",
+          "Fake a throw to 2nd, or throw a short, hard line to the shortstop cutting in.",
+          "Throw the ball to 3rd base."
+        ],
+        correctIndex: 1,
+        why: "Why: Throwing to 2nd allows the runner on 3rd to easily score. Cutoff throws help check the runner at 3rd.",
+        runners: ['1b', '3b'],
+        role: "catcher",
+        hitPresetId: "bunt_p",
+        outcomePresetId: "throw_1b_out_runners_hold"
+      },
+      {
+        id: 26,
+        title: "CATCHER 006",
+        situation: "Bases Loaded, Force at Plate",
+        details: "Bases loaded, 1 out. Ground ball to 1B, who throws home.",
+        question: "What is the play?",
+        choices: [
+          "Catch the ball while stepping on home plate, then look to throw to 1B.",
+          "Run to tag the runner.",
+          "Wait for the runner to slide and tag them."
+        ],
+        correctIndex: 0,
+        why: "Why: Bases loaded makes home a force play. Stepping on the plate is the fastest way to record the out.",
+        runners: ['1b', '2b', '3b'],
+        role: "catcher",
+        hitPresetId: "grounder_1b",
+        outcomePresetId: "step_on_home"
+      },
+      {
+        id: 27,
+        title: "CATCHER 007",
+        situation: "Slow Chopper near Plate",
+        details: "No runners, 1 out. Hitter hits a slow chopper right in front of the plate.",
+        question: "Who fields it and what is the play?",
+        choices: [
+          "Field the ball cleanly and throw to 1st base.",
+          "Let the pitcher run in to field it.",
+          "Throw to 2nd base."
+        ],
+        correctIndex: 0,
+        why: "Why: Short choppers near the plate are the catcher's play. Field it cleanly and make a strong throw to 1B.",
+        runners: [],
+        role: "catcher",
+        hitPresetId: "bunt_p",
+        outcomePresetId: "throw_1b_out"
+      }
+    ];
+
+    const FIRST_BASE_SCENARIOS = [
+      {
+        id: 31,
+        title: "1ST BASE 001",
+        situation: "Grounder Wide, Pitcher Covers",
+        details: "No runners, 1 out. A ground ball is hit wide to your right. You dive and field it, but cannot make it back to 1B.",
+        question: "What do you do?",
+        choices: [
+          "Run all the way to the bag yourself.",
+          "Toss the ball underhand to the pitcher who is running to cover 1st base.",
+          "Throw to 2nd base."
+        ],
+        correctIndex: 1,
+        why: "Why: The pitcher covers 1B on balls hit deep to the right side when the first baseman is out of position.",
+        runners: [],
+        role: "1b",
+        hitPresetId: "grounder_1b",
+        outcomePresetId: "throw_1b_out"
+      },
+      {
+        id: 32,
+        title: "1ST BASE 002",
+        situation: "Hard Grounder, Double Play",
+        details: "Runner on 1st, 1 out. A hard grounder is hit directly to you.",
+        question: "What is the best sequence?",
+        choices: [
+          "Step on 1B first, then throw to 2nd.",
+          "Throw to the shortstop at 2nd base for the force, then run back to cover 1B for the return throw.",
+          "Tag the runner standing near 1B."
+        ],
+        correctIndex: 1,
+        why: "Why: Throwing to 2B first secures the force on the lead runner, then returning to 1B completes the double play.",
+        runners: ['1b'],
+        role: "1b",
+        hitPresetId: "grounder_1b",
+        outcomePresetId: "double_play_363"
+      },
+      {
+        id: 33,
+        title: "1ST BASE 003",
+        situation: "Low Throw, Keep Ball in Front",
+        details: "Runner on 2nd, 2 outs. Grounder to 3B, whose throw to you is low and bounces in the dirt.",
+        question: "What is your approach?",
+        choices: [
+          "Keep your foot on the bag no matter what and reach blindly.",
+          "Leave the bag if necessary to block/scoop the ball and keep it in front of you.",
+          "Run toward the 3rd baseman."
+        ],
+        correctIndex: 1,
+        why: "Why: Keeping the ball in front of you prevents an overthrow, which would score the runner from 2nd base.",
+        runners: ['2b'],
+        role: "1b",
+        hitPresetId: "grounder_3b",
+        outcomePresetId: "throw_1b_out"
+      },
+      {
+        id: 34,
+        title: "1ST BASE 004",
+        situation: "Foul popup near dugout",
+        details: "No runners, no outs. A high fly ball is hit into foul territory near the dugout.",
+        question: "How do you play it?",
+        choices: [
+          "Watch the ball and let it drop foul.",
+          "Chase the ball, find the fence/dugout boundary, and catch it while staying in play.",
+          "Let the catcher catch it."
+        ],
+        correctIndex: 1,
+        why: "Why: A catch in foul territory is an out, but you must find the boundary to avoid falling into the dugout.",
+        runners: [],
+        role: "1b",
+        hitPresetId: "popup_1b",
+        outcomePresetId: "catch_popup"
+      },
+      {
+        id: 35,
+        title: "1ST BASE 005",
+        situation: "Runner on 1st, Hold Runner",
+        details: "Runner on 1st, no outs.",
+        question: "Where should you position yourself before the pitch?",
+        choices: [
+          "Stand deep in the outfield grass.",
+          "Stand with one foot on 1st base, ready for a pickoff throw.",
+          "Stand near the 2nd baseman."
+        ],
+        correctIndex: 1,
+        why: "Why: Holding the runner keeps them close to the bag and prevents a large head start.",
+        runners: ['1b'],
+        role: "1b",
+        hitPresetId: "grounder_1b",
+        outcomePresetId: "throw_1b_out_runners_hold"
+      },
+      {
+        id: 36,
+        title: "1ST BASE 006",
+        situation: "Fly Ball to RF, Cutoff",
+        details: "Runner on 2nd, 1 out. A fly ball is hit deep to right field.",
+        question: "Where do you position yourself?",
+        choices: [
+          "Stay at 1st base and watch the play.",
+          "Move out into shallow right field to line up as the cutoff man to 3rd base/home.",
+          "Run to cover 2nd base."
+        ],
+        correctIndex: 1,
+        why: "Why: The 1B is the cutoff man for all throws coming from right field.",
+        runners: ['2b'],
+        role: "1b",
+        hitPresetId: "fly_rf",
+        outcomePresetId: "outfielder_throw_cutoff"
+      },
+      {
+        id: 37,
+        title: "1ST BASE 007",
+        situation: "Grounder to 2B, Stretch",
+        details: "Runner on 1st, 2 outs. Grounder hit to 2nd baseman.",
+        question: "What is your job?",
+        choices: [
+          "Run to 1st base, touch the bag, and stretch toward the 2nd baseman.",
+          "Run to 2nd base to help.",
+          "Stand off the bag to catch the ball."
+        ],
+        correctIndex: 0,
+        why: "Why: Running to 1B and stretching toward the thrower saves split seconds to get the batter-runner out.",
+        runners: ['1b'],
+        role: "1b",
+        hitPresetId: "grounder_2b",
+        outcomePresetId: "throw_1b_out"
+      }
+    ];
+
+    const SECOND_BASE_SCENARIOS = [
+      {
+        id: 41,
+        title: "2ND BASE 001",
+        situation: "Cover 2nd base",
+        details: "Runner on 1st, no outs. A ground ball is hit to the shortstop.",
+        question: "What is your job?",
+        choices: [
+          "Stay at your position and watch.",
+          "Run to cover 2nd base, receive the throw, step on the bag, and throw to 1B.",
+          "Run to cover 1st base."
+        ],
+        correctIndex: 1,
+        why: "Why: The 2B covers 2nd base on grounders hit to the left side of the infield to complete the double play.",
+        runners: ['1b'],
+        role: "2b",
+        hitPresetId: "grounder_ss",
+        outcomePresetId: "double_play_643"
+      },
+      {
+        id: 42,
+        title: "2ND BASE 002",
+        situation: "Grounder, Step on 2B",
+        details: "Runner on 1st, 1 out. Grounder hit directly to you. You are positioned close to 2nd base.",
+        question: "What is the play?",
+        choices: [
+          "Throw to the shortstop at 2nd base.",
+          "Field the ball, step on 2nd base yourself, and throw to 1B.",
+          "Throw straight to 1st base."
+        ],
+        correctIndex: 1,
+        why: "Why: Stepping on the bag yourself is faster and safer than throwing when you are already close to the base.",
+        runners: ['1b'],
+        role: "2b",
+        hitPresetId: "grounder_2b",
+        outcomePresetId: "double_play_463"
+      },
+      {
+        id: 43,
+        title: "2ND BASE 003",
+        situation: "Fly to Center-Right, Cutoff",
+        details: "Runner on 2nd, 1 out. A fly ball is hit deep to center-right field.",
+        question: "Where do you go?",
+        choices: [
+          "Run out into shallow right-center to act as the cutoff man.",
+          "Stay on 2nd base.",
+          "Run to cover 1st base."
+        ],
+        correctIndex: 0,
+        why: "Why: The 2B is the cutoff for hits to center-right and right field.",
+        runners: ['2b'],
+        role: "2b",
+        hitPresetId: "fly_rcf",
+        outcomePresetId: "outfielder_throw_cutoff"
+      },
+      {
+        id: 44,
+        title: "2ND BASE 004",
+        situation: "Popup in Shallow Right",
+        details: "No runners, 2 outs. A pop-up is hit in shallow right field. Both you and the right fielder are running for it.",
+        question: "Who has priority?",
+        choices: [
+          "Run backward as fast as possible and call for the ball.",
+          "Let the right fielder catch it if they call for it.",
+          "Colliding is fine as long as someone catches it."
+        ],
+        correctIndex: 1,
+        why: "Why: Outfielders running forward have a much better view and priority over infielders running backward.",
+        runners: [],
+        role: "2b",
+        hitPresetId: "popup_2b",
+        outcomePresetId: "catch_popup"
+      },
+      {
+        id: 45,
+        title: "2ND BASE 005",
+        situation: "Grounder deep left, runner on 2nd",
+        details: "Runner on 2nd, 1 out. A ground ball is hit to your left, deep in the hole. You field it.",
+        question: "Where is the play?",
+        choices: [
+          "Throw to 3rd base.",
+          "Throw to 1st base to get the batter-runner.",
+          "Hold the ball and make no throw."
+        ],
+        correctIndex: 1,
+        why: "Why: The runner on 2nd will advance. Throwing to 3B is high-risk. Get the sure out at 1B.",
+        runners: ['2b'],
+        role: "2b",
+        hitPresetId: "grounder_2b",
+        outcomePresetId: "throw_1b_out_runners_advance"
+      },
+      {
+        id: 46,
+        title: "2ND BASE 006",
+        situation: "Pop-up near Mound",
+        details: "Runner on 1st, 2 outs. A soft popup is hit near the mound. The pitcher and shortstop are also calling for it.",
+        question: "What should you do?",
+        choices: [
+          "Run in silently and grab it.",
+          "Communicate clearly (\"Mine!\") if you have the best play, otherwise yield to the shortstop.",
+          "Let the ball drop."
+        ],
+        correctIndex: 1,
+        why: "Why: Clear communication prevents collisions, which are common and dangerous in rec leagues.",
+        runners: ['1b'],
+        role: "2b",
+        hitPresetId: "popup_p",
+        outcomePresetId: "catch_popup"
+      },
+      {
+        id: 47,
+        title: "2ND BASE 007",
+        situation: "Grounder, Runner on 3rd",
+        details: "Runner on 3rd, 1 out. A ground ball is hit to you. The runner on 3rd stays on base.",
+        question: "What do you do?",
+        choices: [
+          "Throw straight to 1st base immediately.",
+          "Check the runner at 3rd to keep them on base, then throw to 1B.",
+          "Throw to home plate."
+        ],
+        correctIndex: 1,
+        why: "Why: Checking the runner keeps them at 3rd base before throwing to 1B to secure the out.",
+        runners: ['3b'],
+        role: "2b",
+        hitPresetId: "grounder_2b",
+        outcomePresetId: "throw_1b_out_runners_hold"
       }
     ];
 
     const THIRD_BASE_SCENARIOS = [
       {
-        id: 101,
-        title: "SCENARIO 001",
-        situation: "Pop-up caught, Runner on 2nd",
-        details: "You are the 3rd baseman. There is a runner on 2nd base. The hitter hits a pop-up fly in your direction, and you catch it in the air. The runner on 2nd base is off base running towards 3rd.",
-        question: "What should you do to get the runner out?",
-        choices: [
-          "Touch 3rd base",
-          "Tag the runner",
-          "Throw to Home plate"
-        ],
-        correctIndex: 1,
-        why: "Why: Since the runner is not forced to advance, they can go back to 2nd. Touching 3rd base does not record an out; you must tag them.",
-        runners: ['2b']
-      },
-      {
-        id: 102,
-        title: "SCENARIO 002",
+        id: 51,
+        title: "3RD BASE 001",
         situation: "Ground Ball, Runner on 2nd",
-        details: "You are the 3rd baseman. There is a runner on 2nd base. Hitter hits a ground ball to you. The runner on 2nd base runs towards 3rd.",
-        question: "What should you do to get the runner out?",
+        details: "Runner on 2nd, 1 out. A ground ball is hit to you, and the runner on 2nd runs to 3rd.",
+        question: "What is the play?",
         choices: [
-          "Touch 3rd base",
-          "Tag the runner",
-          "Throw to Home plate"
+          "Touch 3rd base.",
+          "Pick up the ball and tag the runner advancing to 3rd base.",
+          "Throw to 1st base."
         ],
         correctIndex: 1,
-        why: "Why: Since there is no runner on 1st, the runner is not forced to advance. Touching 3rd base does nothing; you must tag the runner.",
-        runners: ['2b']
+        why: "Why: With 1st base open, there is no force play. You must tag the runner to record the out.",
+        runners: ['2b'],
+        role: "3b",
+        hitPresetId: "grounder_3b",
+        outcomePresetId: "tag_runner_at_3b"
       },
       {
-        id: 103,
-        title: "SCENARIO 003",
-        situation: "Ground Ball, Runners on 1st & 2nd",
-        details: "You are the 3rd baseman. There are runners on 1st and 2nd base. Hitter hits a ground ball to you.",
-        question: "What is the best way to get the lead runner out?",
+        id: 52,
+        title: "3RD BASE 002",
+        situation: "Ground Ball, force play",
+        details: "Runners on 1st & 2nd, no outs. Grounder hit directly to you.",
+        question: "What is the easiest play?",
         choices: [
-          "Touch 3rd base",
-          "Tag the runner",
-          "Throw to Home plate"
+          "Throw to 1st base.",
+          "Step on 3rd base for the force out, then look to throw to 2B or 1B.",
+          "Tag the runner coming from 2nd base."
+        ],
+        correctIndex: 1,
+        why: "Why: With runners on 1st and 2nd, the runner on 2nd is forced to run. Stepping on 3B is a simple force out.",
+        runners: ['1b', '2b'],
+        role: "3b",
+        hitPresetId: "grounder_3b",
+        outcomePresetId: "step_on_3b"
+      },
+      {
+        id: 53,
+        title: "3RD BASE 003",
+        situation: "Grounder, 2 Outs",
+        details: "Runner on 1st, 2 outs. Grounder hit to you.",
+        question: "Where do you throw?",
+        choices: [
+          "Throw to 2nd base (to the 2B covering) or to 1st base.",
+          "Run to 3B and touch it.",
+          "Hold the ball."
         ],
         correctIndex: 0,
-        why: "Why: With runners on 1st and 2nd, the runner on 2nd is forced to run. Touching 3rd base records an easy force out.",
-        runners: ['1b', '2b']
+        why: "Why: Both 1B and 2B are force plays. Throwing to either secures the final out of the inning.",
+        runners: ['1b'],
+        role: "3b",
+        hitPresetId: "grounder_3b",
+        outcomePresetId: "throw_2b_out"
+      },
+      {
+        id: 54,
+        title: "3RD BASE 004",
+        situation: "Bunt down 3B line, runner on 3rd",
+        details: "Runner on 3rd, no outs. The batter bunts down the 3rd base line.",
+        question: "What do you do?",
+        choices: [
+          "Throw to 1B immediately without looking at 3rd.",
+          "Charge the ball, field it cleanly, and check the runner at 3rd before throwing to 1B.",
+          "Throw to home plate."
+        ],
+        correctIndex: 1,
+        why: "Why: Charging bunts is the 3B's job. Checking the runner on 3rd prevents them from scoring on the throw.",
+        runners: ['3b'],
+        role: "3b",
+        hitPresetId: "bunt_3b",
+        outcomePresetId: "throw_1b_out_runners_hold"
+      },
+      {
+        id: 55,
+        title: "3RD BASE 005",
+        situation: "Popup near mound, priority",
+        details: "No runners, 2 outs. A high popup is hit near the mound. You have a better angle than the pitcher.",
+        question: "What do you do?",
+        choices: [
+          "Let the pitcher catch it.",
+          "Call off the pitcher loudly and catch the ball.",
+          "Wait for the ball to land."
+        ],
+        correctIndex: 1,
+        why: "Why: Infielders have a better angle and footing than pitchers on pop-ups near the mound.",
+        runners: [],
+        role: "3b",
+        hitPresetId: "popup_3b",
+        outcomePresetId: "catch_popup"
+      },
+      {
+        id: 56,
+        title: "3RD BASE 006",
+        situation: "Liner to LF, Cutoff",
+        details: "Runner on 2nd, 2 outs. A line drive is hit to left field. The runner is rounding 3rd base.",
+        question: "Where do you position yourself?",
+        choices: [
+          "Stay on 3B base.",
+          "Line up as the cutoff man between the left fielder and home plate.",
+          "Run to cover home plate."
+        ],
+        correctIndex: 1,
+        why: "Why: The 3B is the cutoff man for throws from left field to home plate.",
+        runners: ['2b'],
+        role: "3b",
+        hitPresetId: "liner_lf",
+        outcomePresetId: "outfielder_throw_cutoff"
+      },
+      {
+        id: 57,
+        title: "3RD BASE 007",
+        situation: "Dive and throw from knees",
+        details: "Runner on 1st, 1 out. Hard grounder down the line. You dive, stop it, but are on the ground.",
+        question: "What is your play?",
+        choices: [
+          "Throw to 1st base from your knees or stand up quickly to throw to 1B.",
+          "Throw to 2nd base.",
+          "Walk the ball back to the mound."
+        ],
+        correctIndex: 0,
+        why: "Why: Securing the out at 1B is the safest option when starting a double play is no longer possible.",
+        runners: ['1b'],
+        role: "3b",
+        hitPresetId: "grounder_3b",
+        outcomePresetId: "throw_1b_out"
       }
     ];
+
+    const SHORTSTOP_SCENARIOS = [
+      {
+        id: 61,
+        title: "SHORTSTOP 001",
+        situation: "Cover 2nd base, Grounder to 2B",
+        details: "Runner on 1st, no outs. A ground ball is hit to the 2nd baseman.",
+        question: "What is your job?",
+        choices: [
+          "Stay at your position.",
+          "Cover 2nd base, catch the throw, step on the bag, and throw to 1st base.",
+          "Run to cover 3rd base."
+        ],
+        correctIndex: 1,
+        why: "Why: The SS covers 2nd base on grounders hit to the right side of the infield to complete the double play.",
+        runners: ['1b'],
+        role: "ss",
+        hitPresetId: "grounder_2b",
+        outcomePresetId: "double_play_463"
+      },
+      {
+        id: 62,
+        title: "SHORTSTOP 002",
+        situation: "Deep grounder, runner on 1st",
+        details: "Runner on 1st, 1 out. A grounder is hit deep to you.",
+        question: "What is the best play?",
+        choices: [
+          "Throw to 2nd base to get the force out, or throw to 1st if the runner at 1st is too fast.",
+          "Run to 2nd base yourself.",
+          "Throw to 3rd base."
+        ],
+        correctIndex: 0,
+        why: "Why: Getting the lead force out at 2B is the priority, but throwing to 1B is a safe alternative if 2B cannot cover.",
+        runners: ['1b'],
+        role: "ss",
+        hitPresetId: "grounder_ss",
+        outcomePresetId: "throw_2b_out"
+      },
+      {
+        id: 63,
+        title: "SHORTSTOP 003",
+        situation: "Fly to LF, Cutoff",
+        details: "Runner on 2nd, 1 out. A deep fly ball is hit to left field.",
+        question: "Where do you go?",
+        choices: [
+          "Run out to act as the cutoff man between the left fielder and 3rd base/home plate.",
+          "Cover 2nd base.",
+          "Run to cover 1st base."
+        ],
+        correctIndex: 0,
+        why: "Why: The SS is the cutoff man for all hits to left-center and left field.",
+        runners: ['2b'],
+        role: "ss",
+        hitPresetId: "fly_lf",
+        outcomePresetId: "outfielder_throw_cutoff"
+      },
+      {
+        id: 64,
+        title: "SHORTSTOP 004",
+        situation: "Runner Crosses Path",
+        details: "Runner on 2nd, 2 outs. Grounder hit to you, and the runner on 2nd runs in front of you.",
+        question: "What do you do?",
+        choices: [
+          "Tag the runner.",
+          "Let the runner pass, field the ball cleanly, and throw to 1st base.",
+          "Argue with the umpire."
+        ],
+        correctIndex: 1,
+        why: "Why: Avoid contacting the runner (obstruction). Field the ball cleanly and throw to 1B.",
+        runners: ['2b'],
+        role: "ss",
+        hitPresetId: "grounder_ss",
+        outcomePresetId: "throw_1b_out_runners_advance"
+      },
+      {
+        id: 65,
+        title: "SHORTSTOP 005",
+        situation: "Infield Fly Rule called",
+        details: "Runners on 1st & 2nd, 1 out. High pop-up in the infield.",
+        question: "What does the rule mean?",
+        choices: [
+          "Run away from the ball.",
+          "The batter is automatically out. You should still catch the ball, but if you drop it, the runners are not forced to run.",
+          "Run to step on 2nd base."
+        ],
+        correctIndex: 1,
+        why: "Why: The Infield Fly Rule automatically retires the batter to prevent cheap double plays on dropped popups.",
+        runners: ['1b', '2b'],
+        role: "ss",
+        hitPresetId: "popup_ss",
+        outcomePresetId: "catch_popup"
+      },
+      {
+        id: 66,
+        title: "SHORTSTOP 006",
+        situation: "Slow Roller, Infield Gap",
+        details: "No runners, 1 out. Slow roller in the gap between SS and 3B.",
+        question: "Who should field it?",
+        choices: [
+          "Let the 3rd baseman field it.",
+          "The shortstop, because they are moving towards 1st base and have a stronger momentum for the throw.",
+          "Wait for the pitcher."
+        ],
+        correctIndex: 1,
+        why: "Why: The shortstop has a much better throwing momentum towards 1B than the 3rd baseman on balls in the gap.",
+        runners: [],
+        role: "ss",
+        hitPresetId: "grounder_ss",
+        outcomePresetId: "throw_1b_out"
+      },
+      {
+        id: 67,
+        title: "SHORTSTOP 007",
+        situation: "Steal at 3B, Backup",
+        details: "Runner on 2nd, no outs. Runner tries to steal 3rd. Catcher throws to 3rd.",
+        question: "What is your job?",
+        choices: [
+          "Run to cover 2nd base.",
+          "Run to back up the 3rd baseman at 3rd base.",
+          "Stay at your position."
+        ],
+        correctIndex: 1,
+        why: "Why: The SS backs up 3B on steal throws. If the throw goes wild, you prevent the runner from scoring.",
+        runners: ['2b'],
+        role: "ss",
+        hitPresetId: "bunt_3b",
+        outcomePresetId: "tag_runner_at_3b"
+      }
+    ];
+
+    const LEFT_FIELD_SCENARIOS = [
+      {
+        id: 71,
+        title: "LEFT FIELD 001",
+        situation: "Single, Runner on 1st",
+        details: "Runner on 1st, 1 out. A line drive single is hit to you.",
+        question: "Where do you throw?",
+        choices: [
+          "Throw to 3rd base.",
+          "Throw to 2nd base (to the shortstop or 2B covering) to keep the runner from advancing further.",
+          "Throw to home plate."
+        ],
+        correctIndex: 1,
+        why: "Why: Throwing to 2B is the shortest, safest throw to prevent the runner from taking an extra base.",
+        runners: ['1b'],
+        role: "lf",
+        hitPresetId: "liner_lf",
+        outcomePresetId: "throw_2b_out"
+      },
+      {
+        id: 72,
+        title: "LEFT FIELD 002",
+        situation: "Catch Fly, Runner on 2nd tags",
+        details: "Runner on 2nd, 1 out. A fly ball is hit deep to you. You catch it, and the runner on 2nd tags up.",
+        question: "Where do you throw?",
+        choices: [
+          "Throw to the 3rd baseman (or shortstop acting as cutoff) to prevent the runner from reaching 3rd.",
+          "Throw to home plate.",
+          "Throw to 1st base."
+        ],
+        correctIndex: 0,
+        why: "Why: Throwing to 3B or the cutoff prevents the runner from advancing 2nd-to-3rd safely.",
+        runners: ['2b'],
+        role: "lf",
+        hitPresetId: "fly_lf",
+        outcomePresetId: "outfielder_throw_cutoff"
+      },
+      {
+        id: 73,
+        title: "LEFT FIELD 003",
+        situation: "Ball Down Line, slide stop",
+        details: "No runners, 2 outs. A ball is hit down the left-field line. You run and slide to stop it.",
+        question: "What should you do next?",
+        choices: [
+          "Run the ball back to the infield.",
+          "Throw the ball quickly to the second baseman (cutoff) to prevent the batter from turning it into a double.",
+          "Throw to 3rd base."
+        ],
+        correctIndex: 1,
+        why: "Why: Getting the ball back to the cutoff quickly prevents the batter-runner from taking 2nd base.",
+        runners: [],
+        role: "lf",
+        hitPresetId: "liner_lf",
+        outcomePresetId: "outfielder_throw_cutoff"
+      },
+      {
+        id: 74,
+        title: "LEFT FIELD 004",
+        situation: "Shallow fly, run forward",
+        details: "Runner on 3rd, 1 out. A shallow fly ball is hit to you, and you are running forward.",
+        question: "What is your play?",
+        choices: [
+          "Catch the ball and make a hard, low throw directly to the catcher at home plate.",
+          "Let the ball drop in front of you.",
+          "Throw to 2nd base."
+        ],
+        correctIndex: 0,
+        why: "Why: Running forward gives you momentum for a strong, low throw home to prevent the runner from scoring.",
+        runners: ['3b'],
+        role: "lf",
+        hitPresetId: "fly_lf",
+        outcomePresetId: "throw_home_out"
+      },
+      {
+        id: 75,
+        title: "LEFT FIELD 005",
+        situation: "Single, Runner on 2nd",
+        details: "Runner on 2nd, no outs. A ground ball goes through the infield gap to you, and the runner rounds 3rd.",
+        question: "Where do you throw?",
+        choices: [
+          "Throw directly home from deep left.",
+          "Throw to the cutoff man (shortstop or 3rd baseman) aligned with home plate.",
+          "Throw to 1st base."
+        ],
+        correctIndex: 1,
+        why: "Why: Throwing directly home from deep left is risky. Hitting the cutoff allows them to cut the ball if needed.",
+        runners: ['2b'],
+        role: "lf",
+        hitPresetId: "liner_lf",
+        outcomePresetId: "outfielder_throw_cutoff"
+      },
+      {
+        id: 76,
+        title: "LEFT FIELD 006",
+        situation: "Fly in Gap, CF Calls",
+        details: "No runners, no outs. A high fly ball is hit in the gap between Left Field and Center Field.",
+        question: "What do you do?",
+        choices: [
+          "Keep running and try to catch it anyway.",
+          "Run to the ball, but listen for the center fielder. If they call \"I got it!\", let them catch it.",
+          "Call for it louder."
+        ],
+        correctIndex: 1,
+        why: "Why: The center fielder has priority in the outfield to avoid collisions.",
+        runners: [],
+        role: "lf",
+        hitPresetId: "fly_lcf",
+        outcomePresetId: "catch_fly_ball"
+      },
+      {
+        id: 77,
+        title: "LEFT FIELD 007",
+        situation: "CF Bobble, Backup",
+        details: "Runner on 1st, 2 outs. A fly ball is hit to left-center. You are backing up the center fielder, who bobbles it.",
+        question: "What do you do?",
+        choices: [
+          "Retrieve the ball immediately and throw to 2nd base (or the cutoff) to limit the damage.",
+          "Watch and let the CF recover it.",
+          "Run to cover 3rd base."
+        ],
+        correctIndex: 0,
+        why: "Why: Backing up is crucial. When your teammate misses, retrieve the ball immediately to limit extra bases.",
+        runners: ['1b'],
+        role: "lf",
+        hitPresetId: "fly_lcf",
+        outcomePresetId: "throw_2b_out"
+      }
+    ];
+
+    const CENTER_FIELD_SCENARIOS = [
+      {
+        id: 81,
+        title: "CENTER FIELD 001",
+        situation: "Single, Runner on 2nd home",
+        details: "Runner on 2nd, 1 out. A single is hit to you, and the runner on 2nd is trying to score.",
+        question: "Where do you throw?",
+        choices: [
+          "Throw directly to home plate.",
+          "Throw to the second baseman or shortstop (cutoff man) who is lining up with home plate.",
+          "Throw to 1st base."
+        ],
+        correctIndex: 1,
+        why: "Why: Throwing to the cutoff is safer and lets them decide whether to cut it or let it go home.",
+        runners: ['2b'],
+        role: "cf",
+        hitPresetId: "liner_cf",
+        outcomePresetId: "outfielder_throw_cutoff"
+      },
+      {
+        id: 82,
+        title: "CENTER FIELD 002",
+        situation: "Catch Deep Fly, double off",
+        details: "Runner on 1st, no outs. A deep fly ball is hit over your head. You run back and catch it, and the runner is off base.",
+        question: "Where do you throw?",
+        choices: [
+          "Throw to 3rd base.",
+          "Throw the ball quickly to 1st base (or the second baseman) to double off the runner.",
+          "Walk the ball in."
+        ],
+        correctIndex: 1,
+        why: "Why: The runner left early. A quick throw to 1B/second base secures the double play.",
+        runners: ['1b'],
+        role: "cf",
+        hitPresetId: "fly_cf",
+        outcomePresetId: "throw_1b_out_runners_hold"
+      },
+      {
+        id: 83,
+        title: "CENTER FIELD 003",
+        situation: "Fly in gap, take charge",
+        details: "No runners, 2 outs. A line drive is hit between Left Field and Center Field.",
+        question: "Who should take charge?",
+        choices: [
+          "Let the left fielder take it.",
+          "The center fielder should call for it and take charge, as they have general priority.",
+          "Let the ball drop."
+        ],
+        correctIndex: 1,
+        why: "Why: The center fielder is the captain of the outfield and has priority over LF and RF.",
+        runners: [],
+        role: "cf",
+        hitPresetId: "liner_cf",
+        outcomePresetId: "catch_fly_ball"
+      },
+      {
+        id: 84,
+        title: "CENTER FIELD 004",
+        situation: "Single, Runner on 1st fast",
+        details: "Runner on 1st, 1 out. A line drive single is hit to center. The runner on 1st is fast.",
+        question: "Where do you throw?",
+        choices: [
+          "Throw to 2nd base.",
+          "Throw to 3rd base (through the shortstop cutoff) to prevent the runner from going 1st-to-3rd.",
+          "Throw home."
+        ],
+        correctIndex: 1,
+        why: "Why: Fast runners will try to go 1st-to-3rd on center field singles. Throwing to 3B prevents this.",
+        runners: ['1b'],
+        role: "cf",
+        hitPresetId: "liner_cf",
+        outcomePresetId: "throw_3b_out"
+      },
+      {
+        id: 85,
+        title: "CENTER FIELD 005",
+        situation: "Fly Ball Near Fence",
+        details: "No runners, 1 out. A high fly ball is hit deep near the outfield fence.",
+        question: "What is your primary focus?",
+        choices: [
+          "Keep eyes only on the ball.",
+          "Run back, find the fence with your hand/eyes, secure the catch, and throw to the cutoff.",
+          "Jump over the fence."
+        ],
+        correctIndex: 1,
+        why: "Why: Safety first. Locate the fence to avoid collisions while making the catch.",
+        runners: [],
+        role: "cf",
+        hitPresetId: "fly_cf",
+        outcomePresetId: "catch_fly_ball"
+      },
+      {
+        id: 86,
+        title: "CENTER FIELD 006",
+        situation: "Single, Runner scores",
+        details: "Runner on 2nd, 2 outs. A grounder goes up the middle into center field.",
+        question: "What do you do?",
+        choices: [
+          "Throw to home plate.",
+          "Charge the ball hard, field it cleanly, and throw to the second base area to keep the batter from advancing to 2nd.",
+          "Throw to 3rd base."
+        ],
+        correctIndex: 1,
+        why: "Why: The runner will score, but throwing to 2B prevents the hitter from advancing into scoring position.",
+        runners: ['2b'],
+        role: "cf",
+        hitPresetId: "liner_mid",
+        outcomePresetId: "throw_2b_out"
+      },
+      {
+        id: 87,
+        title: "CENTER FIELD 007",
+        situation: "Bloop, SS Running Back",
+        details: "Runner on 1st, no outs. A shallow blooper is hit to center. The SS is running backward for it.",
+        question: "What is your play?",
+        choices: [
+          "Let the shortstop catch it.",
+          "Call loudly (\"I got it!\") if you can reach it, as you are running forward and have a better view.",
+          "Watch the ball drop."
+        ],
+        correctIndex: 1,
+        why: "Why: Outfielders running forward have priority over infielders running backward.",
+        runners: ['1b'],
+        role: "cf",
+        hitPresetId: "fly_cf",
+        outcomePresetId: "catch_fly_ball"
+      }
+    ];
+
+    const RIGHT_FIELD_SCENARIOS = [
+      {
+        id: 91,
+        title: "RIGHT FIELD 001",
+        situation: "Single, Runner 1st-to-3rd",
+        details: "Runner on 1st, 1 out. A single is hit to you, and the runner on 1st runs to 2nd.",
+        question: "Where do you throw?",
+        choices: [
+          "Throw to 2nd base.",
+          "Throw to 3rd base (through the shortstop/second base cutoff) to prevent the runner from reaching 3rd.",
+          "Throw home."
+        ],
+        correctIndex: 1,
+        why: "Why: Throwing to 3B from RF is the standard play to prevent the runner from going 1st-to-3rd.",
+        runners: ['1b'],
+        role: "rf",
+        hitPresetId: "liner_rf",
+        outcomePresetId: "throw_3b_out"
+      },
+      {
+        id: 92,
+        title: "RIGHT FIELD 002",
+        situation: "Sac Fly Throw Home",
+        details: "Runner on 3rd, less than 2 outs. A fly ball is hit to deep right field. You catch it, and the runner tags up.",
+        question: "Where do you throw?",
+        choices: [
+          "Throw hard and low to home plate (hitting the cutoff man, 1B, if needed).",
+          "Throw to 2nd base.",
+          "Throw to 3rd base."
+        ],
+        correctIndex: 0,
+        why: "Why: A low throw home is easier to handle or cut off to prevent the runner from scoring.",
+        runners: ['3b'],
+        role: "rf",
+        hitPresetId: "fly_rf",
+        outcomePresetId: "throw_home_out"
+      },
+      {
+        id: 93,
+        title: "RIGHT FIELD 003",
+        situation: "Grounder, Runner rounds 3rd",
+        details: "Runner on 2nd, 1 out. A grounder is hit through the infield to you. The runner on 2nd is rounding 3rd.",
+        question: "Where is the play?",
+        choices: [
+          "Throw directly home.",
+          "Throw to the first baseman (cutoff) to line up a throw to home plate.",
+          "Throw to 2nd base."
+        ],
+        correctIndex: 1,
+        why: "Why: The first baseman (1B) is the cutoff man for throws from right field to home plate.",
+        runners: ['2b'],
+        role: "rf",
+        hitPresetId: "liner_rf",
+        outcomePresetId: "outfielder_throw_cutoff"
+      },
+      {
+        id: 94,
+        title: "RIGHT FIELD 004",
+        situation: "Liner down line, corner chase",
+        details: "No runners, no outs. A line drive is hit down the right-field line. You chase it into the corner.",
+        question: "Where do you throw?",
+        choices: [
+          "Throw all the way to 3rd base.",
+          "Throw to the second baseman (cutoff) immediately.",
+          "Run the ball in."
+        ],
+        correctIndex: 1,
+        why: "Why: Throwing to the 2B cutoff immediately prevents the batter from turning a single into a double or triple.",
+        runners: [],
+        role: "rf",
+        hitPresetId: "liner_rf",
+        outcomePresetId: "outfielder_throw_cutoff"
+      },
+      {
+        id: 95,
+        title: "RIGHT FIELD 005",
+        situation: "Bloop, 2B Running Back",
+        details: "No runners, 2 outs. A soft pop-up is hit in shallow right. The 2B is running backward for it.",
+        question: "What do you do?",
+        choices: [
+          "Let the 2nd baseman catch it.",
+          "Call off the second baseman and catch the ball yourself.",
+          "Watch it fall."
+        ],
+        correctIndex: 1,
+        why: "Why: You are running forward, which is a much easier catch than running backward. Call for it.",
+        runners: [],
+        role: "rf",
+        hitPresetId: "popup_2b",
+        outcomePresetId: "catch_popup"
+      },
+      {
+        id: 96,
+        title: "RIGHT FIELD 006",
+        situation: "Fly to Right-Center, CF calls",
+        details: "Runner on 1st, no outs. A fly ball is hit to right-center. The center fielder calls for it.",
+        question: "What is your job?",
+        choices: [
+          "Try to make a diving catch.",
+          "Back up the center fielder by running behind them in case the ball gets past them.",
+          "Stay at your position."
+        ],
+        correctIndex: 1,
+        why: "Why: Backing up your teammate prevents extra bases if they miss or bobble the ball.",
+        runners: ['1b'],
+        role: "rf",
+        hitPresetId: "fly_rcf",
+        outcomePresetId: "catch_fly_ball"
+      },
+      {
+        id: 97,
+        title: "RIGHT FIELD 007",
+        situation: "Bobble grounder, recover",
+        details: "Runner on 1st, 1 out. A sharp ground ball is hit to you. You bobble it, and the runner rounds 2nd.",
+        question: "What do you do?",
+        choices: [
+          "Panic and throw home.",
+          "Recover the ball quickly and throw to the shortstop at 2nd/3rd base to prevent the runner from scoring.",
+          "Walk the ball back."
+        ],
+        correctIndex: 1,
+        why: "Why: Retrieve the ball cleanly and throw to the shortstop in the infield to hold the runner.",
+        runners: ['1b'],
+        role: "rf",
+        hitPresetId: "liner_rf",
+        outcomePresetId: "throw_3b_out"
+      }
+    ];
+
+    const ROLE_SCENARIOS = {
+      'hitter': HITTER_SCENARIOS,
+      'pitcher': PITCHER_SCENARIOS,
+      'catcher': CATCHER_SCENARIOS,
+      '1b': FIRST_BASE_SCENARIOS,
+      '2b': SECOND_BASE_SCENARIOS,
+      '3b': THIRD_BASE_SCENARIOS,
+      'ss': SHORTSTOP_SCENARIOS,
+      'lf': LEFT_FIELD_SCENARIOS,
+      'cf': CENTER_FIELD_SCENARIOS,
+      'rf': RIGHT_FIELD_SCENARIOS
+    };
 
     let currentRole = 'hitter';
     let activeScenarios = HITTER_SCENARIOS;
     let currentScenarioIndex = 0;
 
-    // ============================================================
-    // WEB AUDIO API SOUND GENERATOR
-    // ============================================================
-    let audioCtx = null;
-
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-    }
-
-    function playSelectSound() {
-      initAudio();
-      const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(600, now);
-      osc.frequency.setValueAtTime(900, now + 0.08);
-      
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.linearRampToValueAtTime(0.001, now + 0.18);
-      
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      
-      osc.start();
-      osc.stop(now + 0.18);
-    }
-
-    function playBatCrack() {
-      initAudio();
-      const now = audioCtx.currentTime;
-      
-      // Short impulse noise for the impact "tock"
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(320, now);
-      osc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
-      
-      gain.gain.setValueAtTime(0.4, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-      
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      
-      osc.start();
-      osc.stop(now + 0.08);
-      
-      // Short filtered noise burst for the "thwack" texture
-      const bufferSize = audioCtx.sampleRate * 0.05;
-      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-      
-      const noise = audioCtx.createBufferSource();
-      noise.buffer = buffer;
-      
-      const filter = audioCtx.createBiquadFilter();
-      filter.type = 'bandpass';
-      filter.frequency.value = 1100;
-      filter.Q.value = 1.8;
-      
-      const noiseGain = audioCtx.createGain();
-      noiseGain.gain.setValueAtTime(0.35, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-      
-      noise.connect(filter);
-      filter.connect(noiseGain);
-      noiseGain.connect(audioCtx.destination);
-      
-      noise.start();
-      noise.stop(now + 0.05);
-    }
-
-    function playCrowdCheer(duration, maxVolume = 0.25) {
-      initAudio();
-      const bufferSize = audioCtx.sampleRate * duration;
-      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-      const data = buffer.getChannelData(0);
-      
-      // White noise generator
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-      }
-      
-      const source = audioCtx.createBufferSource();
-      source.buffer = buffer;
-      
-      // Filter 1 - Human voice range/cheering
-      const filter1 = audioCtx.createBiquadFilter();
-      filter1.type = 'bandpass';
-      filter1.frequency.value = 950;
-      filter1.Q.value = 1.3;
-
-      // Filter 2 - High frequency cheers/whistling tones
-      const filter2 = audioCtx.createBiquadFilter();
-      filter2.type = 'bandpass';
-      filter2.frequency.value = 1750;
-      filter2.Q.value = 1.6;
-      
-      const gainNode = audioCtx.createGain();
-      const now = audioCtx.currentTime;
-      
-      gainNode.gain.setValueAtTime(0, now);
-      gainNode.gain.linearRampToValueAtTime(maxVolume, now + 0.35); // rise
-      gainNode.gain.linearRampToValueAtTime(maxVolume * 0.75, now + 1.2); // sustain slightly lower
-      gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration); // fade
-      
-      // Modulate frequencies to simulate wave of cheering
-      filter1.frequency.setValueAtTime(850, now);
-      filter1.frequency.exponentialRampToValueAtTime(1300, now + 0.4);
-      filter1.frequency.linearRampToValueAtTime(950, now + duration);
-
-      filter2.frequency.setValueAtTime(1550, now);
-      filter2.frequency.exponentialRampToValueAtTime(2100, now + 0.45);
-      filter2.frequency.linearRampToValueAtTime(1650, now + duration);
-
-      source.connect(filter1);
-      filter1.connect(gainNode);
-      
-      source.connect(filter2);
-      filter2.connect(gainNode);
-      
-      gainNode.connect(audioCtx.destination);
-      
-      source.start();
-      source.stop(now + duration);
-    }
-
-    function playGloveCatch() {
-      initAudio();
-      const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(180, now);
-      osc.frequency.exponentialRampToValueAtTime(60, now + 0.08);
-      
-      gain.gain.setValueAtTime(0.3, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-      
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      
-      osc.start();
-      osc.stop(now + 0.08);
-    }
-
-    function playTagSound() {
-      initAudio();
-      const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(400, now);
-      osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
-      
-      gain.gain.setValueAtTime(0.15, now);
-      gain.gain.linearRampToValueAtTime(0.001, now + 0.1);
-      
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      
-      osc.start();
-      osc.stop(now + 0.1);
-    }
+    // Web Audio API functions are defined in js/audio.js
 
     // ============================================================
     // MENU ROLE SELECTION
@@ -1533,10 +2555,14 @@
       if (parent) {
         parent.appendChild(glow);
         parent.appendChild(text);
+        glow.setAttribute('display', 'inline');
+        text.setAttribute('display', 'inline');
         glow.setAttribute('opacity', '1');
         text.setAttribute('opacity', '1');
         text.setAttribute('y', String(y));
       } else {
+        glow.setAttribute('display', 'none');
+        text.setAttribute('display', 'none');
         glow.setAttribute('opacity', '0');
         text.setAttribute('opacity', '0');
       }
@@ -1546,9 +2572,9 @@
     // MENU ROLE SELECTION
     // ============================================================
     function selectRole(role) {
-      if (role !== 'hitter' && role !== '3rd_base') return;
+      if (!ROLE_SCENARIOS[role]) return;
       currentRole = role;
-      activeScenarios = (role === 'hitter' ? HITTER_SCENARIOS : THIRD_BASE_SCENARIOS);
+      activeScenarios = ROLE_SCENARIOS[role];
       currentScenarioIndex = 0;
 
       playSelectSound();
@@ -1619,7 +2645,7 @@
       resetGame();
     }
 
-    const BATTER_HOME = { x: 148, y: 258 };
+    // BATTER_HOME is already defined in js/engine.js
     const BASE_POS = {
       home: { x: 148, y: 258 },
       '1b': { x: 262, y: 152 },
@@ -1718,39 +2744,7 @@
 
     // Cinematic close-up sequence removed. Replaced by persistent real-time Batter Cam stacked below the field.
 
-    // ============================================================
-    // BALL PRE-DECISION TARGETS FOR EACH SCENARIO
-    // ============================================================
-    const BALL_PRE_TARGETS = {
-      1: { x: 160, y: 100 },
-      2: { x: 210, y: 200 },
-      3: { x: 130, y: 140 },
-      4: { x: 100, y: 120 },
-      5: { x: 200, y: 160 },
-      6: { x: 120, y: 170 }
-    };
 
-    // ============================================================
-    // BALL HIT ANIMATION (supports fly, line drive, and grounder)
-    // ============================================================
-    async function animateHitBall(target, duration = 600, isFly = true) {
-      popflyBall.setAttribute('opacity', '1');
-      popflyBall.setAttribute('transform', 'translate(148,248)');
-
-      await animate(duration, t => {
-        const e = easeOut(t);
-        const bx = lerp(148, target.x, e);
-        const by = lerp(248, target.y, e);
-        
-        let scale = 1.0;
-        if (isFly) {
-          scale = 1.0 + Math.sin(t * Math.PI) * 0.2;
-        } else {
-          scale = 1.0 - t * 0.3;
-        }
-        popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(${scale})`);
-      });
-    }
 
     // ============================================================
     // RESET GAME STATE
@@ -1800,398 +2794,33 @@
         return;
       }
 
-      const scenario = activeScenarios[currentScenarioIndex];
-      const isCustom = scenario.id.toString().startsWith('custom_');
-
-      if (isCustom) {
-        isAnimating = true;
-        setDisabled(true);
-        const glow = document.getElementById('you-glow');
-        const text = document.getElementById('you-text');
-        if (glow) glow.setAttribute('opacity', '0');
-        if (text) text.setAttribute('opacity', '0');
-        
-        const hitPreset = HIT_PRESETS.find(h => h.id === scenario.hitPresetId) || HIT_PRESETS[0];
-        
-        await AnimationEngine.triggerPitch(currentRole, hitPreset, scenario.runners, () => {
-          showQuizForScenario();
-          setDisabled(false);
-          isAnimating = false;
-        });
-        return;
-      }
-
       isAnimating = true;
       setDisabled(true);
 
+      const scenario = activeScenarios[currentScenarioIndex];
+
       // Hide YOU indicators when play begins
-      const youText = document.getElementById('fielder-3b-you-text');
-      const youGlow = document.getElementById('fielder-3b-you-glow');
-      if (youText) youText.setAttribute('opacity', '0');
-      if (youGlow) youGlow.setAttribute('opacity', '0');
-
-      // Reset
-      batGroup.setAttribute('transform', '');
-      popflyBall.setAttribute('opacity', '0');
-
-      if (currentRole === 'hitter') {
-        // 1. WIND-UP
-        await animate(400, t => {
-          pitcherArm.setAttribute('transform', `rotate(${easeInOut(t) * -110}, 8, -22)`);
-          pitcherG.setAttribute('transform', `translate(160,152) scale(${PLAYER_SCALE}) rotate(${easeInOut(t) * -5}, 0, -20)`);
-        });
-        await wait(120);
-
-        // 2. THROW
-        pitcherBallHand.setAttribute('opacity', '0');
-        ballG.setAttribute('opacity', '1');
-        ballG.setAttribute('transform', 'translate(160,145)');
-
-        // Initialize closeup ball and swing prep
-        cuBall.setAttribute('opacity', '1');
-        cuBall.setAttribute('transform', 'translate(260, 40)');
-        cuImpact.setAttribute('opacity', '0');
-        crackText.style.opacity = '0';
-        crackText.style.transform = 'translate(-50%,-50%) scale(0)';
-        flashEl.style.opacity = '0';
-
-        const throwP = animate(220, t => {
-          const angle = -110 + easeOut(t) * 140;
-          pitcherArm.setAttribute('transform', `rotate(${angle}, 8, -22)`);
-          pitcherG.setAttribute('transform', `translate(160,152) scale(${PLAYER_SCALE}) rotate(${(1 - easeOut(t)) * -5}, 0, -20)`);
-        });
-        const ballTravelP = animate(280, t => {
-          const e = easeOut(t);
-          ballG.setAttribute('transform', `translate(${lerp(160, 148, e)},${lerp(145, 248, e) + Math.sin(t * Math.PI) * -8})`);
-          
-          // Sync closeup ball travel and swing prep in real-time
-          const bx = lerp(260, 80, t);
-          const by = lerp(40, 88, t);
-          cuBall.setAttribute('transform', `translate(${bx},${by})`);
-          
-          const batAngle = t * 20;
-          cuBatGroup.setAttribute('transform', `rotate(${batAngle}, -38, -60)`);
-          const bodyRotate = t * 6;
-          cuBatter.setAttribute('transform', `translate(130,158) rotate(${bodyRotate}, 0, -80)`);
-        });
-        await Promise.all([throwP, ballTravelP]);
-
-        // Stop here! Pitch has arrived.
-        await wait(300);
-
-        // Show quiz overlay dynamically
-        showQuizForScenario();
-      } else {
-        // --- 3RD BASE ROLE FLOW ---
-        // 1. WIND-UP
-        await animate(400, t => {
-          pitcherArm.setAttribute('transform', `rotate(${easeInOut(t) * -110}, 8, -22)`);
-          pitcherG.setAttribute('transform', `translate(160,152) scale(${PLAYER_SCALE}) rotate(${easeInOut(t) * -5}, 0, -20)`);
-        });
-        await wait(120);
-
-        // 2. THROW
-        pitcherBallHand.setAttribute('opacity', '0');
-        ballG.setAttribute('opacity', '1');
-        ballG.setAttribute('transform', 'translate(160,145)');
-
-        // Closeup views prep
-        cuBall.setAttribute('opacity', '1');
-        cuBall.setAttribute('transform', 'translate(260, 40)');
-        cuImpact.setAttribute('opacity', '0');
-        crackText.style.opacity = '0';
-        crackText.style.transform = 'translate(-50%,-50%) scale(0)';
-        flashEl.style.opacity = '0';
-
-        // Ball travel to plate
-        const throwP = animate(220, t => {
-          const angle = -110 + easeOut(t) * 140;
-          pitcherArm.setAttribute('transform', `rotate(${angle}, 8, -22)`);
-          pitcherG.setAttribute('transform', `translate(160,152) scale(${PLAYER_SCALE}) rotate(${(1 - easeOut(t)) * -5}, 0, -20)`);
-        });
-        const ballTravelP = animate(280, t => {
-          const e = easeOut(t);
-          ballG.setAttribute('transform', `translate(${lerp(160, 148, e)},${lerp(145, 248, e) + Math.sin(t * Math.PI) * -8})`);
-          
-          const bx = lerp(260, 80, t);
-          const by = lerp(40, 88, t);
-          cuBall.setAttribute('transform', `translate(${bx},${by})`);
-          
-          const batAngle = t * 20;
-          cuBatGroup.setAttribute('transform', `rotate(${batAngle}, -38, -60)`);
-          const bodyRotate = t * 6;
-          cuBatter.setAttribute('transform', `translate(130,158) rotate(${bodyRotate}, 0, -80)`);
-        });
-        await Promise.all([throwP, ballTravelP]);
-
-        // 3. HIT! Swing & contact automatically (since the user is playing 3rd baseman watching the hit)
-        spawnDust(148, 240, 12);
-        playBatCrack();
-        const hitTypeLabel = (scenario.id === 101) ? 'POP FLY' : 'GROUNDER';
-        showFloatingTag(playerG, hitTypeLabel, '#f0e040');
-        
-        // Impact lines and crack text
-        cuImpact.setAttribute('opacity', '1');
-        cuImpact.setAttribute('transform', 'translate(130,158)');
-        crackText.style.opacity = '1';
-        crackText.style.transform = 'translate(-50%,-50%) scale(1)';
-        flashEl.style.opacity = '0.95';
-        const flashFadeP = animate(120, t => { flashEl.style.opacity = String(0.95 * (1 - t)); });
-
-        // Batter swing follow through
-        const swingP = animate(200, t => {
-          const e = easeOut(t);
-          batGroup.setAttribute('transform', `rotate(${-30 + e * 180}, 8, -24)`);
-          playerG.setAttribute('transform', `translate(${BATTER_HOME.x},${BATTER_HOME.y}) scale(${PLAYER_SCALE}) rotate(${e * 25}, 0, -20)`);
-        });
-        const hitP = animate(200, t => {
-          ballG.setAttribute('opacity', String(1 - t));
-        });
-        const cuRicochetP = animate(300, t => {
-          const e = easeInOut(t);
-          const batAngle = 20 + e * 40;
-          cuBatGroup.setAttribute('transform', `rotate(${batAngle}, -38, -60)`);
-          const bodyRotate = 6 + e * 12;
-          cuBatter.setAttribute('transform', `translate(130,158) rotate(${bodyRotate}, 0, -80)`);
-          
-          const bx = lerp(80, -30, e);
-          const by = lerp(88, -20, e) - Math.sin(e * Math.PI) * 50;
-          cuBall.setAttribute('transform', `translate(${bx},${by})`);
-        });
-        await Promise.all([flashFadeP, swingP, hitP, cuRicochetP]);
-
-        // Clean up closeup elements
-        flashEl.style.opacity = '0';
-        ballG.setAttribute('opacity', '0');
-        pitcherBallHand.setAttribute('opacity', '1');
-        crackText.style.opacity = '0';
-        cuImpact.setAttribute('opacity', '0');
-        cuBall.setAttribute('opacity', '0');
-
-        // 4. BALL FLIES TOWARDS 3RD BASE & 3RD BASEMAN MOVES TO FIELD
-        const scenario = activeScenarios[currentScenarioIndex];
-        const isPopUp = (scenario.id === 101);
-        setStatus(isPopUp ? "POP-UP FLY TO 3RD BASE!" : "GROUND BALL TO 3RD BASE!");
-
-        const popFlyTarget = { x: 74, y: 155 }; // catch location near 3rd base
-        const fielder3bStart = { x: 78, y: 172 };
-        const fielder3bTarget = { x: 74, y: 155 };
-        const runner2bStart = { x: 160, y: 50 };
-        const runner2bTarget = { x: 109, y: 101 }; // half way between 2B and 3B
-        
-        // Runner 1B for Scenario 103
-        const runner1bStart = { x: 262, y: 152 };
-        const runner1bTarget = { x: 211, y: 101 };
-
-        popflyBall.setAttribute('opacity', '1');
-        popflyBall.setAttribute('transform', 'translate(148,248)');
-
-        const ballDuration = 1400; // flight time for pop fly or grounder roll
-
-        const ballFlightP = animate(ballDuration, t => {
-          const bx = lerp(148, popFlyTarget.x, t);
-          const by = lerp(248, popFlyTarget.y, t);
-          
-          let arc = 0;
-          let scale = 1.0;
-          if (isPopUp) {
-            // High arc height for pop-up
-            arc = Math.sin(t * Math.PI) * -80;
-            scale = 1.0 + Math.sin(t * Math.PI) * 0.4;
-          } else {
-            // Low bouncing/rolling grounder
-            arc = Math.abs(Math.sin(t * Math.PI * 4)) * -4; 
-            scale = 1.0 - t * 0.2;
-          }
-          popflyBall.setAttribute('transform', `translate(${bx},${by + arc}) scale(${scale})`);
-        });
-
-        // 3rd baseman runs to catch/field spot
-        const fielderMoveP = animate(ballDuration, t => {
-          const x = lerp(fielder3bStart.x, fielder3bTarget.x, t);
-          const y = lerp(fielder3bStart.y, fielder3bTarget.y, t);
-          const bob = Math.sin(t * 12) * 2;
-          const scale = getScaleForY(y);
-          const fielder3bG = document.getElementById('fielder-3b');
-          fielder3bG.setAttribute('transform', `translate(${x},${y + bob}) scale(${scale})`);
-        });
-
-        // Runner runs off 2B towards 3B
-        const runnerMoveP = animate(ballDuration * 0.8, t => {
-          const x = lerp(runner2bStart.x, runner2bTarget.x, t);
-          const y = lerp(runner2bStart.y, runner2bTarget.y, t);
-          const bob = Math.sin(t * 10) * 2;
-          const scale = getScaleForY(y);
-          const runner2b = document.getElementById('runner-2b');
-          runner2b.setAttribute('transform', `translate(${x},${y + bob}) scale(${scale})`);
-        });
-
-        // Runner 1B runs towards 2B (only in Scenario 103)
-        let runner1bMoveP = Promise.resolve();
-        if (scenario.id === 103) {
-          runner1bMoveP = animate(ballDuration * 0.8, t => {
-            const x = lerp(runner1bStart.x, runner1bTarget.x, t);
-            const y = lerp(runner1bStart.y, runner1bTarget.y, t);
-            const bob = Math.sin(t * 10) * 2;
-            const scale = getScaleForY(y);
-            const runner1b = document.getElementById('runner-1b');
-            runner1b.setAttribute('transform', `translate(${x},${y + bob}) scale(${scale})`);
-          });
-        }
-
-        // Batter runs a bit towards 1B
-        const batterRunP = animate(ballDuration * 0.6, t => {
-          const x = lerp(BATTER_HOME.x, BATTER_HOME.x + 30, t);
-          const y = lerp(BATTER_HOME.y, BATTER_HOME.y - 30, t);
-          const scale = getScaleForY(y);
-          playerG.setAttribute('transform', `translate(${x},${y}) scale(${scale})`);
-        });
-
-        await Promise.all([ballFlightP, fielderMoveP, runnerMoveP, runner1bMoveP, batterRunP]);
-
-        // 5. CATCH / FIELD BALL
-        playGloveCatch();
-        spawnDust(popFlyTarget.x, popFlyTarget.y, 8);
-        popflyBall.setAttribute('opacity', '0'); // Caught/Fielded!
-        
-        setStatus(isPopUp ? "CAUGHT! Batter is out! Play continues..." : "FIELDED! Play continues...");
-        await wait(600);
-
-        // Show the quiz!
-        showQuizForScenario();
+      const glow = document.getElementById('you-glow');
+      const text = document.getElementById('you-text');
+      if (glow) {
+        glow.setAttribute('display', 'none');
+        glow.setAttribute('opacity', '0');
       }
-    }
-
-    // ============================================================
-    // SWING & HIT ANIMATION (Correct Answer)
-    // ============================================================
-    async function playSwingAndHit() {
-      const scenario = activeScenarios[currentScenarioIndex];
-      // 3. CONTACT SWING & RICOCHET (both views, in sync, real-time)
-      spawnDust(148, 240, 12);
-      playBatCrack();
-      playCrowdCheer(2.5, 0.22);
-      let hitTypeLabel = 'LINE DRIVE';
-      if (scenario.id === 1 || scenario.id === 4) {
-        hitTypeLabel = 'FLY BALL';
-      } else if (scenario.id === 2) {
-        hitTypeLabel = 'GROUNDER';
+      if (text) {
+        text.setAttribute('display', 'none');
+        text.setAttribute('opacity', '0');
       }
-      showFloatingTag(playerG, hitTypeLabel, '#f0e040');
 
-      // Show impact starburst and crack text
-      cuImpact.setAttribute('opacity', '1');
-      cuImpact.setAttribute('transform', 'translate(130,158)');
-      crackText.style.opacity = '1';
-      crackText.style.transform = 'translate(-50%,-50%) scale(1)';
-
-      // Flash closeup viewport
-      flashEl.style.opacity = '0.95';
-      const flashFadeP = animate(120, t => { flashEl.style.opacity = String(0.95 * (1 - t)); });
-
-      // Field view swing follow-through
-      const swingP = animate(200, t => {
-        const e = easeOut(t);
-        batGroup.setAttribute('transform', `rotate(${-30 + e * 180}, 8, -24)`);
-        playerG.setAttribute('transform', `translate(${cur.x},${cur.y}) scale(${PLAYER_SCALE}) rotate(${e * 25}, 0, -20)`);
+      const hitPreset = HIT_PRESETS.find(h => h.id === scenario.hitPresetId) || HIT_PRESETS[0];
+      
+      await AnimationEngine.triggerPitch(currentRole, hitPreset, scenario.runners, () => {
+        showQuizForScenario();
+        setDisabled(false);
+        isAnimating = false;
       });
-
-      // Field view pitched ball fades
-      const hitP = animate(200, t => {
-        ballG.setAttribute('opacity', String(1 - t));
-      });
-
-      // Closeup swing follow-through & ball ricochet
-      const cuRicochetP = animate(300, t => {
-        const e = easeInOut(t);
-        const batAngle = 20 + e * 40;
-        cuBatGroup.setAttribute('transform', `rotate(${batAngle}, -38, -60)`);
-        const bodyRotate = 6 + e * 12;
-        cuBatter.setAttribute('transform', `translate(130,158) rotate(${bodyRotate}, 0, -80)`);
-        
-        const bx = lerp(80, -30, e);
-        const by = lerp(88, -20, e) - Math.sin(e * Math.PI) * 50;
-        cuBall.setAttribute('transform', `translate(${bx},${by})`);
-      });
-
-      // 4. Scenario play outcome starts flying immediately on contact!
-      const scenario = activeScenarios[currentScenarioIndex];
-      const ballFlightP = playScenarioPlay(scenario.id);
-
-      await Promise.all([flashFadeP, swingP, hitP, cuRicochetP, ballFlightP]);
-
-      // Clean up field view pitch ball and closeup impact/ball
-      flashEl.style.opacity = '0';
-      ballG.setAttribute('opacity', '0');
-      pitcherBallHand.setAttribute('opacity', '1');
-
-      // Crack text wiggle
-      await animate(200, t => {
-        const angle = Math.sin(t * Math.PI * 4) * 5;
-        crackText.style.transform = `translate(-50%,-50%) scale(1) rotate(${angle}deg)`;
-      });
-      await wait(200);
-
-      // Fade out closeup impact and crack text
-      const fadeOutP = animate(150, t => {
-        crackText.style.opacity = String(1 - t);
-      });
-      await Promise.all([fadeOutP]);
-      crackText.style.opacity = '0';
-      cuImpact.setAttribute('opacity', '0');
-      cuBall.setAttribute('opacity', '0');
-
-      // Reset batter stance
-      batGroup.setAttribute('transform', '');
-      playerG.setAttribute('transform', `translate(${cur.x},${cur.y}) scale(${PLAYER_SCALE})`);
     }
 
-    // ============================================================
-    // SWING & MISS ANIMATION (Wrong Answer)
-    // ============================================================
-    async function playSwingAndMiss() {
-      // Batter swings (no bat crack, just whoosh / silent)
-      const swingP = animate(200, t => {
-        const e = easeOut(t);
-        batGroup.setAttribute('transform', `rotate(${-30 + e * 180}, 8, -24)`);
-        playerG.setAttribute('transform', `translate(${cur.x},${cur.y}) scale(${PLAYER_SCALE}) rotate(${e * 25}, 0, -20)`);
-      });
 
-      // Ball goes to catcher (behind plate)
-      const ballP = animate(150, t => {
-        const e = easeInOut(t);
-        const bx = lerp(148, 160, e);
-        const by = lerp(248, 282, e);
-        ballG.setAttribute('transform', `translate(${bx},${by}) scale(0.8)`);
-      });
-
-      // Closeup batter swings and misses
-      const cuRicochetP = animate(250, t => {
-        const e = easeInOut(t);
-        const batAngle = 20 + e * 40;
-        cuBatGroup.setAttribute('transform', `rotate(${batAngle}, -38, -60)`);
-        const bodyRotate = 6 + e * 12;
-        cuBatter.setAttribute('transform', `translate(130,158) rotate(${bodyRotate}, 0, -80)`);
-        
-        // closeup ball continues past the glove
-        const bx = lerp(80, 20, e);
-        const by = lerp(88, 110, e);
-        cuBall.setAttribute('transform', `translate(${bx},${by})`);
-      });
-
-      await Promise.all([swingP, ballP, cuRicochetP]);
-
-      // Hide ball
-      ballG.setAttribute('opacity', '0');
-      cuBall.setAttribute('opacity', '0');
-      pitcherBallHand.setAttribute('opacity', '1');
-
-      await wait(300);
-
-      // Reset batter stance
-      batGroup.setAttribute('transform', '');
-      playerG.setAttribute('transform', `translate(${cur.x},${cur.y}) scale(${PLAYER_SCALE})`);
-    }
 
     // ============================================================
     // SHOW QUIZ OVERLAY FOR CURRENT SCENARIO
@@ -2220,6 +2849,7 @@
       quizOverlay.classList.add('visible');
     }
 
+
     // ============================================================
     // QUIZ ANSWER HANDLER
     // ============================================================
@@ -2231,701 +2861,28 @@
 
       const scenario = activeScenarios[currentScenarioIndex];
       const isCorrect = (index === scenario.correctIndex);
-      const isCustom = scenario.id.toString().startsWith('custom_');
 
-      if (isCustom) {
-        if (isCorrect) {
-          const hitPreset = HIT_PRESETS.find(h => h.id === scenario.hitPresetId) || HIT_PRESETS[0];
-          const outcomePreset = OUTCOME_PRESETS.find(o => o.id === scenario.outcomePresetId) || OUTCOME_PRESETS[0];
-          
-          if (currentRole === 'hitter') {
-            await AnimationEngine.playHitterCorrectHit(hitPreset, async () => {
-              await AnimationEngine.playOutcomeSteps(outcomePreset.steps, scenario);
-            });
-          } else {
+      if (isCorrect) {
+        const hitPreset = HIT_PRESETS.find(h => h.id === scenario.hitPresetId) || HIT_PRESETS[0];
+        const outcomePreset = OUTCOME_PRESETS.find(o => o.id === scenario.outcomePresetId) || OUTCOME_PRESETS[0];
+        
+        if (currentRole === 'hitter') {
+          await AnimationEngine.playHitterCorrectHit(hitPreset, async () => {
             await AnimationEngine.playOutcomeSteps(outcomePreset.steps, scenario);
-          }
-          await showResult(true, scenario.why);
-          isAnimating = false;
-          showNextButton();
+          });
         } else {
-          if (currentRole === 'hitter') {
-            await AnimationEngine.playHitterSwingMiss();
-          }
-          await showResult(false, scenario.why);
-          isAnimating = false;
-          showTryAgainButton();
+          await AnimationEngine.playOutcomeSteps(outcomePreset.steps, scenario);
         }
-        return;
-      }
-
-      if (currentRole === 'hitter') {
-        if (isCorrect) {
-          // ✅ CORRECT
-          // Play hit animation (swing, contact, ball flight, and base running)
-          await playSwingAndHit();
-          
-          // Show result card
-          await showResult(true, scenario.why);
-          
-          // Show NEXT button
-          isAnimating = false;
-          showNextButton();
-        } else {
-          // ❌ WRONG
-          // Play swing and miss animation
-          await playSwingAndMiss();
-          
-          // Show result card
-          await showResult(false, scenario.why);
-          
-          isAnimating = false;
-        }
+        await showResult(true, scenario.why);
+        isAnimating = false;
+        showNextButton();
       } else {
-        // --- 3RD BASE ROLE ---
-        if (isCorrect) {
-          // ✅ CORRECT
-          if (scenario.id === 103) {
-            await playForcePlayAt3rd();
-          } else if (scenario.id === 104) {
-            await playStealTagAt3rd();
-          } else if (scenario.id === 105) {
-            await playThrowTo2nd();
-          } else if (scenario.id === 106) {
-            await playThrowTo1st();
-          } else {
-            await playCorrectTagPlay();
-          }
-          await showResult(true, scenario.why);
-          isAnimating = false;
-          showNextButton();
-        } else {
-          // ❌ WRONG
-          await playIncorrectPlay(index);
-          await showResult(false, scenario.why);
-          isAnimating = false;
-          showTryAgainButton();
+        if (currentRole === 'hitter') {
+          await AnimationEngine.playHitterSwingMiss();
         }
-      }
-    }
-
-    async function playForcePlayAt3rd() {
-      setStatus("RUNNING TO TOUCH 3RD BASE FOR THE FORCE OUT!");
-      const fielder3bG = document.getElementById('fielder-3b');
-      const runner2bG = document.getElementById('runner-2b');
-      const runner1bG = document.getElementById('runner-1b');
-
-      const fielderStart = { x: 74, y: 155 };
-      const fielderTarget = BASE_POS['3b']; // { x: 58, y: 152 }
-      
-      const runner2bStart = { x: 109, y: 101 };
-      const runner2bTarget = BASE_POS['3b'];
-      
-      const runner1bStart = { x: 211, y: 101 };
-      const runner1bTarget = BASE_POS['2b']; // { x: 160, y: 50 }
-
-      const duration = 700;
-      await animate(duration, t => {
-        // Fielder runs to 3B
-        const fx = lerp(fielderStart.x, fielderTarget.x, t);
-        const fy = lerp(fielderStart.y, fielderTarget.y, t);
-        const fBob = Math.sin(t * 8) * 1.5;
-        const fScale = getScaleForY(fy);
-        fielder3bG.setAttribute('transform', `translate(${fx},${fy + fBob}) scale(${fScale})`);
-
-        // Runner from 2B runs to 3B
-        const r2x = lerp(runner2bStart.x, runner2bTarget.x, t);
-        const r2y = lerp(runner2bStart.y, runner2bTarget.y, t);
-        const r2Bob = Math.sin(t * 8) * 1.5;
-        const r2Scale = getScaleForY(r2y);
-        runner2bG.setAttribute('transform', `translate(${r2x},${r2y + r2Bob}) scale(${r2Scale})`);
-
-        // Runner from 1B runs to 2B
-        const r1x = lerp(runner1bStart.x, runner1bTarget.x, t);
-        const r1y = lerp(runner1bStart.y, runner1bTarget.y, t);
-        const r1Bob = Math.sin(t * 8) * 1.5;
-        const r1Scale = getScaleForY(r1y);
-        runner1bG.setAttribute('transform', `translate(${r1x},${r1y + r1Bob}) scale(${r1Scale})`);
-
-        // Batter runs to 1B
-        const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
-        const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
-        const bScale = getScaleForY(by);
-        playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
-      });
-
-      // Force out!
-      flashBase('3b');
-      playGloveCatch();
-      spawnDust(fielderTarget.x, fielderTarget.y, 10);
-      playCrowdCheer(2.5, 0.25);
-
-      // Show OUT tag on runner 2b
-      showFloatingTag(runner2bG, 'OUT', '#e74c3c');
-      // Hide runner 2b (out)
-      runner2bG.setAttribute('opacity', '0');
-
-      // Show SAFE tags on runner 1b and batter
-      showFloatingTag(runner1bG, 'SAFE', '#2ecc71');
-      showFloatingTag(playerG, 'SAFE', '#2ecc71');
-
-      setStatus("FORCE OUT AT 3RD BASE! LEAD RUNNER IS OUT!");
-      await wait(600);
-    }
-
-    async function playStealTagAt3rd() {
-      setStatus("TAGGING THE RUNNER AT 3RD BASE!");
-      const fielder3bG = document.getElementById('fielder-3b');
-      const runner2bG = document.getElementById('runner-2b');
-
-      const fielderStart = { x: 62, y: 154 };
-      const fielderTarget = { x: 58, y: 152 };
-      const runnerStart = { x: 109, y: 101 };
-      const runnerTarget = { x: 58, y: 152 };
-
-      const duration = 600;
-      await animate(duration, t => {
-        // Fielder reaches for the tag
-        const fx = lerp(fielderStart.x, fielderTarget.x, t);
-        const fy = lerp(fielderStart.y, fielderTarget.y, t);
-        const scale = getScaleForY(fy);
-        fielder3bG.setAttribute('transform', `translate(${fx},${fy}) scale(${scale})`);
-
-        // Runner slides into 3B
-        const rx = lerp(runnerStart.x, runnerTarget.x, t);
-        const ry = lerp(runnerStart.y, runnerTarget.y, t);
-        const rBob = Math.sin(t * Math.PI) * -6; // slide curve
-        const rScale = getScaleForY(ry);
-        runner2bG.setAttribute('transform', `translate(${rx},${ry + rBob}) scale(${rScale})`);
-      });
-
-      playTagSound();
-      spawnDust(runnerTarget.x, runnerTarget.y, 14);
-      playCrowdCheer(2.5, 0.25);
-
-      // Show OUT tag on runner 2b
-      showFloatingTag(runner2bG, 'OUT', '#e74c3c');
-      runner2bG.setAttribute('opacity', '0'); // Tagged out!
-      setStatus("OUT AT 3RD BASE! STEAL PREVENTED!");
-      await wait(600);
-    }
-
-    async function playThrowTo2nd() {
-      setStatus("THROWING TO 2ND BASE FOR THE FORCE OUT!");
-      const fielder3bG = document.getElementById('fielder-3b');
-      const runner1bG = document.getElementById('runner-1b');
-      const secondBaseman = document.getElementById('fielder-2b');
-
-      const fielderPos = { x: 74, y: 155 };
-      const targetPos = BASE_POS['2b']; // { x: 160, y: 50 }
-      const runnerStart = { x: 211, y: 101 };
-      const runnerTarget = BASE_POS['2b'];
-
-      popflyBall.setAttribute('opacity', '1');
-      popflyBall.setAttribute('transform', `translate(${fielderPos.x},${fielderPos.y})`);
-
-      const duration = 700;
-      const throwP = animate(350, t => {
-        const bx = lerp(fielderPos.x, targetPos.x, t);
-        const by = lerp(fielderPos.y, targetPos.y, t);
-        popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(0.6)`);
-      });
-
-      const runnerP = animate(duration, t => {
-        // Runner runs to 2B
-        const rx = lerp(runnerStart.x, runnerTarget.x, t);
-        const ry = lerp(runnerStart.y, runnerTarget.y, t);
-        const scale = getScaleForY(ry);
-        runner1bG.setAttribute('transform', `translate(${rx},${ry}) scale(${scale})`);
-
-        // Second baseman covers 2B
-        const sbx = lerp(218, 160, t);
-        const sby = lerp(108, 50, t);
-        const sbScale = getScaleForY(sby);
-        secondBaseman.setAttribute('transform', `translate(${sbx},${sby}) scale(${sbScale})`);
-
-        // Batter runs to 1B
-        const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
-        const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
-        const bScale = getScaleForY(by);
-        playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
-      });
-
-      await Promise.all([throwP, runnerP]);
-
-      playGloveCatch();
-      flashBase('2b');
-      spawnDust(targetPos.x, targetPos.y, 10);
-      playCrowdCheer(2.5, 0.25);
-      popflyBall.setAttribute('opacity', '0');
-
-      // Show OUT tag on runner 1b and SAFE tag on batter
-      showFloatingTag(runner1bG, 'OUT', '#e74c3c');
-      runner1bG.setAttribute('opacity', '0'); // force out!
-
-      showFloatingTag(playerG, 'SAFE', '#2ecc71');
-
-      // Reset second baseman back
-      secondBaseman.setAttribute('transform', `translate(218,108) scale(${PLAYER_SCALE})`);
-
-      setStatus("OUT AT 2ND BASE! FORCE OUT!");
-      await wait(600);
-    }
-
-    async function playThrowTo1st() {
-      setStatus("THROWING TO 1ST BASE FOR THE OUT!");
-      const firstBaseman = document.getElementById('fielder-1b');
-
-      const fielderPos = { x: 74, y: 155 };
-      const targetPos = BASE_POS['1b']; // { x: 262, y: 152 }
-
-      popflyBall.setAttribute('opacity', '1');
-      popflyBall.setAttribute('transform', `translate(${fielderPos.x},${fielderPos.y})`);
-
-      const duration = 700;
-      const throwP = animate(350, t => {
-        const bx = lerp(fielderPos.x, targetPos.x, t);
-        const by = lerp(fielderPos.y, targetPos.y, t);
-        popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(0.6)`);
-      });
-
-      const runnerP = animate(duration, t => {
-        // Batter runs to 1B
-        const bx = lerp(BATTER_HOME.x + 30, targetPos.x, t);
-        const by = lerp(BATTER_HOME.y - 30, targetPos.y, t);
-        const bScale = getScaleForY(by);
-        playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
-
-        // First baseman covers 1B
-        const fbx = lerp(240, 262, t);
-        const fby = lerp(172, 152, t);
-        const fbScale = getScaleForY(fby);
-        firstBaseman.setAttribute('transform', `translate(${fbx},${fby}) scale(${fbScale})`);
-      });
-
-      await Promise.all([throwP, runnerP]);
-
-      playGloveCatch();
-      flashBase('1b');
-      spawnDust(targetPos.x, targetPos.y, 10);
-      playCrowdCheer(2.5, 0.25);
-      popflyBall.setAttribute('opacity', '0');
-      
-      // Reset first baseman back
-      firstBaseman.setAttribute('transform', `translate(240,172) scale(${PLAYER_SCALE})`);
-
-      // Show OUT tag on batter
-      showFloatingTag(playerG, 'OUT', '#e74c3c');
-      // Batter stays at 1B but is out (opacity decrease)
-      playerG.setAttribute('opacity', '0.5'); 
-
-      setStatus("OUT AT 1ST BASE! BATTER IS RETIRED!");
-      await wait(600);
-    }
-
-    async function playCorrectTagPlay() {
-      setStatus("RUNNING TO TAG THE RUNNER!");
-      const fielder3bG = document.getElementById('fielder-3b');
-      const runner2bG = document.getElementById('runner-2b');
-
-      const fielderStart = { x: 74, y: 155 };
-      const runnerStart = { x: 109, y: 101 };
-      
-      const tagSpot = { x: 130, y: 78 };
-      const runnerBackSpot = { x: 130, y: 78 }; // tagged here
-
-      const chaseDuration = 900;
-      await animate(chaseDuration, t => {
-        // Fielder runs to tag spot
-        const fx = lerp(fielderStart.x, tagSpot.x, t);
-        const fy = lerp(fielderStart.y, tagSpot.y, t);
-        const fBob = Math.sin(t * 12) * 2;
-        const fScale = getScaleForY(fy);
-        fielder3bG.setAttribute('transform', `translate(${fx},${fy + fBob}) scale(${fScale})`);
-
-        // Runner runs back towards 2B
-        const rx = lerp(runnerStart.x, runnerBackSpot.x, t);
-        const ry = lerp(runnerStart.y, runnerBackSpot.y, t);
-        const rBob = Math.sin(t * 10) * 2;
-        const rScale = getScaleForY(ry);
-        runner2bG.setAttribute('transform', `translate(${rx},${ry + rBob}) scale(${rScale})`);
-      });
-
-      // Tag contact!
-      playTagSound();
-      spawnDust(tagSpot.x, tagSpot.y, 14);
-      playCrowdCheer(2.5, 0.25);
-
-      // Show OUT tag on runner 2b and SAFE tag on batter
-      showFloatingTag(runner2bG, 'OUT', '#e74c3c');
-      // Hide runner (tagged out)
-      runner2bG.setAttribute('opacity', '0');
-
-      showFloatingTag(playerG, 'SAFE', '#2ecc71');
-
-      setStatus("DOUBLE PLAY! TAGGED OUT!");
-      await wait(600);
-    }
-
-    async function playIncorrectPlay(index) {
-      const fielder3bG = document.getElementById('fielder-3b');
-      const runner2bG = document.getElementById('runner-2b');
-      const runner1bG = document.getElementById('runner-1b');
-      const scenario = activeScenarios[currentScenarioIndex];
-
-      if (scenario.id === 104) {
-        // --- SCENARIO 104 (STEAL PLAY) ---
-        const runnerStart = { x: 109, y: 101 };
-        const runnerTarget = BASE_POS['3b']; // { x: 58, y: 152 }
-
-        if (index === 1) {
-          // --- STAND AND WATCH ---
-          setStatus("WATCHING THE RUNNER STEAL...");
-          const duration = 600;
-          await animate(duration, t => {
-            // Runner steals 3B
-            const rx = lerp(runnerStart.x, runnerTarget.x, t);
-            const ry = lerp(runnerStart.y, runnerTarget.y, t);
-            const scale = getScaleForY(ry);
-            runner2bG.setAttribute('transform', `translate(${rx},${ry}) scale(${scale})`);
-          });
-          
-          flashBase('3b');
-          spawnDust(runnerTarget.x, runnerTarget.y, 8);
-          setStatus("SAFE! RUNNER STOLE 3RD BASE! NO ONE COVERED!");
-          await wait(800);
-
-        } else if (index === 2) {
-          // --- COVER 2ND BASE (WRONG BASE) ---
-          setStatus("RUNNING TO COVER 2ND BASE...");
-          const fielderStart = { x: 78, y: 172 };
-          const fielderTarget = BASE_POS['2b']; // { x: 160, y: 50 }
-
-          const duration = 800;
-          await animate(duration, t => {
-            // Fielder runs to 2B
-            const fx = lerp(fielderStart.x, fielderTarget.x, t);
-            const fy = lerp(fielderStart.y, fielderTarget.y, t);
-            const fScale = getScaleForY(fy);
-            fielder3bG.setAttribute('transform', `translate(${fx},${fy}) scale(${fScale})`);
-
-            // Runner steals 3B
-            const rx = lerp(runnerStart.x, runnerTarget.x, t);
-            const ry = lerp(runnerStart.y, runnerTarget.y, t);
-            const rScale = getScaleForY(ry);
-            runner2bG.setAttribute('transform', `translate(${rx},${ry}) scale(${rScale})`);
-          });
-
-          flashBase('3b');
-          spawnDust(runnerTarget.x, runnerTarget.y, 8);
-          setStatus("SAFE! RUNNER STOLE 3B! YOU COVERED THE WRONG BASE!");
-          await wait(800);
-        }
-
-      } else if (scenario.id === 105) {
-        // --- SCENARIO 105 (GROUNDER, RUNNER ON 1st) ---
-        const runnerStart = { x: 211, y: 101 };
-        const runnerTarget = BASE_POS['2b']; // { x: 160, y: 50 }
-
-        if (index === 1) {
-          // --- TOUCH 3RD BASE (NO FORCE PLAY AT 3RD) ---
-          setStatus("RUNNING TO TOUCH 3RD BASE...");
-          const fielderStart = { x: 74, y: 155 };
-          const fielderTarget = BASE_POS['3b'];
-
-          const duration = 800;
-          await animate(duration, t => {
-            // Fielder runs to 3B
-            const fx = lerp(fielderStart.x, fielderTarget.x, t);
-            const fy = lerp(fielderStart.y, fielderTarget.y, t);
-            const fScale = getScaleForY(fy);
-            fielder3bG.setAttribute('transform', `translate(${fx},${fy}) scale(${fScale})`);
-
-            // Runner 1B runs to 2B safely
-            const rx = lerp(runnerStart.x, runnerTarget.x, t);
-            const ry = lerp(runnerStart.y, runnerTarget.y, t);
-            const rScale = getScaleForY(ry);
-            runner1bG.setAttribute('transform', `translate(${rx},${ry}) scale(${rScale})`);
-
-            // Batter runs to 1B
-            const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
-            const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
-            const bScale = getScaleForY(by);
-            playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
-          });
-
-          flashBase('3b');
-          spawnDust(fielderTarget.x, fielderTarget.y, 8);
-          playGloveCatch();
-          
-          setStatus("TOUCHED 3RD BASE! BUT RUNNERS ARE SAFE!");
-          await wait(800);
-
-        } else if (index === 2) {
-          // --- THROW HOME ---
-          setStatus("THROWING TO HOME PLATE...");
-          const fielderPos = { x: 74, y: 155 };
-          const homePos = { x: 160, y: 282 };
-
-          popflyBall.setAttribute('opacity', '1');
-          popflyBall.setAttribute('transform', `translate(${fielderPos.x},${fielderPos.y})`);
-
-          const duration = 800;
-          const throwP = animate(400, t => {
-            const bx = lerp(fielderPos.x, homePos.x, t);
-            const by = lerp(fielderPos.y, homePos.y, t);
-            popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(0.6)`);
-          });
-
-          const runnersP = animate(duration, t => {
-            // Runner 1B runs to 2B
-            const rx = lerp(runnerStart.x, runnerTarget.x, t);
-            const ry = lerp(runnerStart.y, runnerTarget.y, t);
-            const rScale = getScaleForY(ry);
-            runner1bG.setAttribute('transform', `translate(${rx},${ry}) scale(${rScale})`);
-
-            // Batter runs to 1B
-            const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
-            const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
-            const bScale = getScaleForY(by);
-            playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
-          });
-
-          await Promise.all([throwP, runnersP]);
-          
-          playGloveCatch();
-          popflyBall.setAttribute('opacity', '0');
-          
-          setStatus("THREW TO HOME! BUT RUNNERS ARE SAFE!");
-          await wait(800);
-        }
-
-      } else if (scenario.id === 106) {
-        // --- SCENARIO 106 (GROUNDER, BASES EMPTY) ---
-        if (index === 1) {
-          // --- THROW TO 2ND BASE (WRONG BASE) ---
-          setStatus("THROWING TO 2ND BASE...");
-          const fielderPos = { x: 74, y: 155 };
-          const targetPos = BASE_POS['2b']; // { x: 160, y: 50 }
-
-          popflyBall.setAttribute('opacity', '1');
-          popflyBall.setAttribute('transform', `translate(${fielderPos.x},${fielderPos.y})`);
-
-          const duration = 800;
-          const throwP = animate(400, t => {
-            const bx = lerp(fielderPos.x, targetPos.x, t);
-            const by = lerp(fielderPos.y, targetPos.y, t);
-            popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(0.6)`);
-          });
-
-          const runnerP = animate(duration, t => {
-            // Batter runs to 1B
-            const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
-            const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
-            const bScale = getScaleForY(by);
-            playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
-          });
-
-          await Promise.all([throwP, runnerP]);
-          
-          playGloveCatch();
-          popflyBall.setAttribute('opacity', '0');
-          
-          setStatus("THREW TO 2ND! BUT BATTER IS SAFE AT 1ST!");
-          await wait(800);
-
-        } else if (index === 2) {
-          // --- THROW TO HOME ---
-          setStatus("THROWING TO HOME PLATE...");
-          const fielderPos = { x: 74, y: 155 };
-          const homePos = { x: 160, y: 282 };
-
-          popflyBall.setAttribute('opacity', '1');
-          popflyBall.setAttribute('transform', `translate(${fielderPos.x},${fielderPos.y})`);
-
-          const duration = 800;
-          const throwP = animate(400, t => {
-            const bx = lerp(fielderPos.x, homePos.x, t);
-            const by = lerp(fielderPos.y, homePos.y, t);
-            popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(0.6)`);
-          });
-
-          const runnerP = animate(duration, t => {
-            // Batter runs to 1B
-            const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
-            const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
-            const bScale = getScaleForY(by);
-            playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
-          });
-
-          await Promise.all([throwP, runnerP]);
-          
-          playGloveCatch();
-          popflyBall.setAttribute('opacity', '0');
-          
-          setStatus("THREW TO HOME! BUT BATTER IS SAFE AT 1ST!");
-          await wait(800);
-        }
-
-      } else {
-        // --- SCENARIO 101, 102 & 103 (PREVIOUS SCENARIOS) ---
-        if (scenario.id === 103) {
-          // --- SCENARIO 103 INCORRECT FLOWS ---
-          if (index === 1) {
-            // --- TAG RUNNER (INCORRECT) ---
-            setStatus("ATTEMPTING TO TAG THE RUNNER...");
-            const fielderStart = { x: 74, y: 155 };
-            const tagSpot = { x: 92, y: 124 };
-            const runner2bStart = { x: 109, y: 101 };
-            const runner2bTarget = BASE_POS['3b'];
-            
-            const runner1bStart = { x: 211, y: 101 };
-            const runner1bTarget = BASE_POS['2b'];
-
-            const duration = 800;
-            await animate(duration, t => {
-              const fx = lerp(fielderStart.x, tagSpot.x, t);
-              const fy = lerp(fielderStart.y, tagSpot.y, t);
-              const fBob = Math.sin(t * 10) * 2;
-              const fScale = getScaleForY(fy);
-              fielder3bG.setAttribute('transform', `translate(${fx},${fy + fBob}) scale(${fScale})`);
-
-              const r2x = lerp(runner2bStart.x, runner2bTarget.x, t);
-              const r2y = lerp(runner2bStart.y, runner2bTarget.y, t);
-              const r2Bob = Math.sin(t * 8) * 1.5;
-              const r2Scale = getScaleForY(r2y);
-              runner2bG.setAttribute('transform', `translate(${r2x},${r2y + r2Bob}) scale(${r2Scale})`);
-
-              const r1x = lerp(runner1bStart.x, runner1bTarget.x, t);
-              const r1y = lerp(runner1bStart.y, runner1bTarget.y, t);
-              const r1Bob = Math.sin(t * 8) * 1.5;
-              const r1Scale = getScaleForY(r1y);
-              runner1bG.setAttribute('transform', `translate(${r1x},${r1y + r1Bob}) scale(${r1Scale})`);
-
-              const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
-              const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
-              const bScale = getScaleForY(by);
-              playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
-            });
-
-            flashBase('3b');
-            spawnDust(runner2bTarget.x, runner2bTarget.y, 8);
-            setStatus("SAFE! RUNNER SLID SAFELY INTO 3RD BASE!");
-            await wait(800);
-
-          } else if (index === 2) {
-            // --- THROW HOME (INCORRECT) ---
-            setStatus("THROWING TO HOME PLATE...");
-            const fielderPos = { x: 74, y: 155 };
-            const homePos = { x: 160, y: 282 };
-            const runner2bStart = { x: 109, y: 101 };
-            const runner2bTarget = BASE_POS['3b'];
-            const runner1bStart = { x: 211, y: 101 };
-            const runner1bTarget = BASE_POS['2b'];
-
-            popflyBall.setAttribute('opacity', '1');
-            popflyBall.setAttribute('transform', `translate(${fielderPos.x},${fielderPos.y})`);
-
-            const duration = 800;
-            const throwP = animate(400, t => {
-              const bx = lerp(fielderPos.x, homePos.x, t);
-              const by = lerp(fielderPos.y, homePos.y, t);
-              popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(0.6)`);
-            });
-
-            const runnersP = animate(duration, t => {
-              const r2x = lerp(runner2bStart.x, runner2bTarget.x, t);
-              const r2y = lerp(runner2bStart.y, runner2bTarget.y, t);
-              const r2Scale = getScaleForY(r2y);
-              runner2bG.setAttribute('transform', `translate(${r2x},${r2y}) scale(${r2Scale})`);
-
-              const r1x = lerp(runner1bStart.x, runner1bTarget.x, t);
-              const r1y = lerp(runner1bStart.y, runner1bTarget.y, t);
-              const r1Scale = getScaleForY(r1y);
-              runner1bG.setAttribute('transform', `translate(${r1x},${r1y}) scale(${r1Scale})`);
-
-              const bx = lerp(BATTER_HOME.x + 30, BASE_POS['1b'].x, t);
-              const by = lerp(BATTER_HOME.y - 30, BASE_POS['1b'].y, t);
-              const bScale = getScaleForY(by);
-              playerG.setAttribute('transform', `translate(${bx},${by}) scale(${bScale})`);
-            });
-
-            await Promise.all([throwP, runnersP]);
-
-            playGloveCatch();
-            popflyBall.setAttribute('opacity', '0');
-
-            setStatus("THREW TO HOME! BUT ALL RUNNERS ADVANCED SAFELY!");
-            await wait(800);
-          }
-
-        } else {
-          // --- SCENARIO 101 & 102 INCORRECT FLOWS ---
-          if (index === 0) {
-            // --- TOUCH 3RD BASE ---
-            setStatus("RUNNING TO TOUCH 3RD BASE...");
-            const fielderStart = { x: 74, y: 155 };
-            const fielderTarget = BASE_POS['3b']; // { x: 58, y: 152 }
-            const runnerStart = { x: 109, y: 101 };
-            const runnerTarget = BASE_POS['2b']; // { x: 160, y: 50 }
-
-            const duration = 800;
-            await animate(duration, t => {
-              const fx = lerp(fielderStart.x, fielderTarget.x, t);
-              const fy = lerp(fielderStart.y, fielderTarget.y, t);
-              const fBob = Math.sin(t * 10) * 2;
-              const fScale = getScaleForY(fy);
-              fielder3bG.setAttribute('transform', `translate(${fx},${fy + fBob}) scale(${fScale})`);
-
-              const rx = lerp(runnerStart.x, runnerTarget.x, t);
-              const ry = lerp(runnerStart.y, runnerTarget.y, t);
-              const rBob = Math.sin(t * 10) * 2;
-              const rScale = getScaleForY(ry);
-              runner2bG.setAttribute('transform', `translate(${rx},${ry + rBob}) scale(${rScale})`);
-            });
-
-            flashBase('3b');
-            spawnDust(fielderTarget.x, fielderTarget.y, 8);
-            playGloveCatch();
-            
-            setStatus("TOUCHED 3RD BASE! BUT RUNNER IS SAFE AT 2ND!");
-            await wait(800);
-
-          } else if (index === 2) {
-            // --- THROW TO HOME ---
-            setStatus("THROWING TO HOME PLATE...");
-            const fielderPos = { x: 74, y: 155 };
-            const homePos = { x: 160, y: 282 };
-            const runnerStart = { x: 109, y: 101 };
-            const runnerTarget = BASE_POS['2b']; // { x: 160, y: 50 }
-
-            popflyBall.setAttribute('opacity', '1');
-            popflyBall.setAttribute('transform', `translate(${fielderPos.x},${fielderPos.y})`);
-
-            const duration = 800;
-            const throwP = animate(400, t => {
-              const bx = lerp(fielderPos.x, homePos.x, t);
-              const by = lerp(fielderPos.y, homePos.y, t);
-              popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(0.6)`);
-            });
-
-            const runnerP = animate(duration, t => {
-              const rx = lerp(runnerStart.x, runnerTarget.x, t);
-              const ry = lerp(runnerStart.y, runnerTarget.y, t);
-              const rBob = Math.sin(t * 10) * 2;
-              const rScale = getScaleForY(ry);
-              runner2bG.setAttribute('transform', `translate(${rx},${ry + rBob}) scale(${rScale})`);
-            });
-
-            await Promise.all([throwP, runnerP]);
-            
-            playGloveCatch();
-            popflyBall.setAttribute('opacity', '0');
-            
-            setStatus("THREW TO HOME! BUT RUNNER IS SAFE AT 2ND!");
-            await wait(800);
-          }
-        }
+        await showResult(false, scenario.why);
+        isAnimating = false;
+        showTryAgainButton();
       }
     }
 
@@ -3007,189 +2964,6 @@
       resultOverlay.style.opacity = '0';
       resultText.style.transform = 'scale(0)';
       if (expEl) expEl.style.opacity = '0';
-    }
-
-    // ============================================================
-    // GENERAL ELEMENT RUNNING ANIMATION WITH 2.5D DEPTH
-    // ============================================================
-    function runElementToBases(el, baseList) {
-      return new Promise(async resolve => {
-        let currentPos = { x: 148, y: 258 };
-        const trans = el.getAttribute('transform');
-        if (trans) {
-          const match = trans.match(/translate\(([^,\s)]+)[,\s]([^)\s]+)\)/);
-          if (match) {
-            currentPos.x = parseFloat(match[1]);
-            currentPos.y = parseFloat(match[2]);
-          }
-        }
-        
-        for (let i = 0; i < baseList.length; i++) {
-          const targetBase = baseList[i];
-          const target = BASE_POS[targetBase];
-          const startX = currentPos.x, startY = currentPos.y;
-          const dx = target.x - startX, dy = target.y - startY;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 4) continue;
-          
-          const duration = Math.max(380, dist * 2.5);
-          const t0 = performance.now();
-          
-          await animate(duration, t => {
-            const easeT = easeInOut(t);
-            const x = startX + dx * easeT;
-            const y = startY + dy * easeT;
-            const bobAmp = Math.min((dist / duration) * 140, 6);
-            const bob = Math.sin(t * dist * 0.38) * bobAmp;
-            const lean = (dx > 0 ? 1 : dx < 0 ? -1 : 0) * 4 * Math.sin(t * dist * 0.22);
-            
-            const scale = getScaleForY(y);
-            el.setAttribute('transform', `translate(${x},${y + bob}) scale(${scale}) rotate(${lean}, 0, -20)`);
-            currentPos.x = x;
-            currentPos.y = y;
-          });
-          
-          currentPos.x = target.x;
-          currentPos.y = target.y;
-          const scale = getScaleForY(target.y);
-          el.setAttribute('transform', `translate(${target.x},${target.y}) scale(${scale})`);
-          
-          flashBase(targetBase);
-          spawnDust(target.x, target.y - 20, 8);
-          
-          // Small bounce at base
-          await new Promise(res => {
-            const bx = currentPos.x, by = currentPos.y, t0 = performance.now();
-            function b(now) {
-              const t = (now - t0) / 300;
-              if (t > 1) { 
-                el.setAttribute('transform', `translate(${bx},${by}) scale(${scale})`); 
-                res(); 
-                return; 
-              }
-              const scaleNow = getScaleForY(by + Math.sin(t * Math.PI) * -8);
-              el.setAttribute('transform', `translate(${bx},${by + Math.sin(t * Math.PI) * -8}) scale(${scaleNow})`);
-              requestAnimationFrame(b);
-            }
-            requestAnimationFrame(b);
-          });
-        }
-        resolve();
-      });
-    }
-
-    // ============================================================
-    // SCENARIO PLAY OUTCOME ANIMATIONS
-    // ============================================================
-    async function playScenarioPlay(scenarioId) {
-      const scenario = activeScenarios[currentScenarioIndex];
-      
-      if (scenarioId === 1) {
-        // Deep fly ball to center field
-        await animateHitBall({ x: 160, y: 40 }, 400, true);
-        // Catch flash
-        for (let i = 0; i < 3; i++) {
-          popflyBall.setAttribute('opacity', '0');
-          await wait(80);
-          popflyBall.setAttribute('opacity', '1');
-          await wait(80);
-        }
-        
-        // Runner tags from 3B to Home, Batter runs to 1B
-        const run3bPromise = runElementToBases(document.getElementById('runner-3b'), ['home']);
-        const batterPromise = runElementToBases(playerG, ['1b']);
-        
-        await Promise.all([run3bPromise, batterPromise]);
-        showFloatingTag(document.getElementById('runner-3b'), 'SAFE', '#2ecc71');
-        showFloatingTag(playerG, 'OUT', '#e74c3c');
-        playerG.setAttribute('opacity', '0');
-        setStatus("SACRIFICE FLY! RUN SCORED!");
-        
-      } else if (scenarioId === 2) {
-        // Grounder rolls to 2B area
-        await animateHitBall({ x: 230, y: 160 }, 300, false);
-        
-        // Runner on 2B to 3B, Batter to 1B
-        const run2bPromise = runElementToBases(document.getElementById('runner-2b'), ['3b']);
-        const batterPromise = runElementToBases(playerG, ['1b']);
-        
-        // Ball is thrown to 1B
-        const throwBall = animate(250, t => {
-          const bx = lerp(230, 262, t);
-          const by = lerp(160, 152, t);
-          popflyBall.setAttribute('transform', `translate(${bx},${by}) scale(0.6)`);
-        });
-        
-        await Promise.all([run2bPromise, batterPromise, throwBall]);
-        popflyBall.setAttribute('opacity', '0');
-        showFloatingTag(document.getElementById('runner-2b'), 'SAFE', '#2ecc71');
-        showFloatingTag(playerG, 'OUT', '#e74c3c');
-        playerG.setAttribute('opacity', '0');
-        setStatus("GROUNDOUT. RUNNER ADVANCED TO 3RD!");
-        
-      } else if (scenarioId === 3) {
-        // Hit rolls to gap
-        await animateHitBall({ x: 100, y: 40 }, 500, true);
-        
-        // Runner scores, Batter safe at 1B
-        const run2bPromise = runElementToBases(document.getElementById('runner-2b'), ['3b', 'home']);
-        const batterPromise = runElementToBases(playerG, ['1b']);
-        
-        await Promise.all([run2bPromise, batterPromise]);
-        showFloatingTag(document.getElementById('runner-2b'), 'SAFE', '#2ecc71');
-        showFloatingTag(playerG, 'SAFE', '#2ecc71');
-        setStatus("RBI SINGLE! RUN SCORED! SAFE!");
-        
-      } else if (scenarioId === 4) {
-        // Deep fly to left field
-        await animateHitBall({ x: 90, y: 45 }, 500, true);
-        // Catch flash
-        for (let i = 0; i < 3; i++) {
-          popflyBall.setAttribute('opacity', '0');
-          await wait(80);
-          popflyBall.setAttribute('opacity', '1');
-          await wait(80);
-        }
-        
-        // Runner on 3B scores, 2B to 3B, Batter runs to 1B
-        const run3bPromise = runElementToBases(document.getElementById('runner-3b'), ['home']);
-        const run2bPromise = runElementToBases(document.getElementById('runner-2b'), ['3b']);
-        const batterPromise = runElementToBases(playerG, ['1b']);
-        
-        await Promise.all([run3bPromise, run2bPromise, batterPromise]);
-        showFloatingTag(document.getElementById('runner-3b'), 'SAFE', '#2ecc71');
-        showFloatingTag(document.getElementById('runner-2b'), 'SAFE', '#2ecc71');
-        showFloatingTag(playerG, 'OUT', '#e74c3c');
-        playerG.setAttribute('opacity', '0');
-        setStatus("SAC FLY! RUN SCORED!");
-        
-      } else if (scenarioId === 5) {
-        // Line drive to right field
-        await animateHitBall({ x: 240, y: 80 }, 500, true);
-        
-        // Runner to 2B, Batter to 1B
-        const run1bPromise = runElementToBases(document.getElementById('runner-1b'), ['2b']);
-        const batterPromise = runElementToBases(playerG, ['1b']);
-        
-        await Promise.all([run1bPromise, batterPromise]);
-        showFloatingTag(document.getElementById('runner-1b'), 'SAFE', '#2ecc71');
-        showFloatingTag(playerG, 'SAFE', '#2ecc71');
-        setStatus("LINE DRIVE SINGLE TO RIGHT! SAFE!");
-        
-      } else if (scenarioId === 6) {
-        // Walk-off hit
-        await animateHitBall({ x: 160, y: 50 }, 500, true);
-        
-        // Runner on 3B to Home, Batter to 1B
-        const run3bPromise = runElementToBases(document.getElementById('runner-3b'), ['home']);
-        const batterPromise = runElementToBases(playerG, ['1b']);
-        
-        await Promise.all([run3bPromise, batterPromise]);
-        showFloatingTag(document.getElementById('runner-3b'), 'SAFE', '#2ecc71');
-        showFloatingTag(playerG, 'SAFE', '#2ecc71');
-        playCrowdCheer(6.0, 0.45);
-        setStatus("WALK-OFF SINGLE! YOU WIN THE GAME! 🏆");
-      }
     }
   </script>
 </body>
