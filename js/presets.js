@@ -335,6 +335,7 @@ const OUTCOME_PRESETS = [
     type: 'double_play',
     description: 'Shortstop throws to 2nd baseman, who throws to 1st base.',
     steps: [
+      { type: 'fielder_move_role', role: '2b', targetBase: '2b', duration: 250 },
       { type: 'status', text: 'SS FIELDS AND THROWS TO 2B!' },
       { type: 'ball_throw', targetBase: '2b', duration: 300 },
       { type: 'catch_sound' },
@@ -357,6 +358,7 @@ const OUTCOME_PRESETS = [
     type: 'double_play',
     description: '2nd baseman throws to Shortstop, who throws to 1st base.',
     steps: [
+      { type: 'fielder_move_role', role: 'ss', targetBase: '2b', duration: 250 },
       { type: 'status', text: '2B FIELDS AND THROWS TO SS!' },
       { type: 'ball_throw', targetBase: '2b', duration: 300 },
       { type: 'catch_sound' },
@@ -379,6 +381,7 @@ const OUTCOME_PRESETS = [
     type: 'double_play',
     description: '3rd baseman throws to 2nd baseman, who throws to 1st base.',
     steps: [
+      { type: 'fielder_move_role', role: '2b', targetBase: '2b', duration: 250 },
       { type: 'status', text: '3B FIELDS AND THROWS TO 2B!' },
       { type: 'ball_throw', targetBase: '2b', duration: 300 },
       { type: 'catch_sound' },
@@ -401,6 +404,7 @@ const OUTCOME_PRESETS = [
     type: 'double_play',
     description: 'Pitcher throws to Shortstop, who throws to 1st base.',
     steps: [
+      { type: 'fielder_move_role', role: 'ss', targetBase: '2b', duration: 250 },
       { type: 'status', text: 'PITCHER FIELDS AND THROWS TO SS!' },
       { type: 'ball_throw', targetBase: '2b', duration: 300 },
       { type: 'catch_sound' },
@@ -423,6 +427,7 @@ const OUTCOME_PRESETS = [
     type: 'double_play',
     description: '1st baseman throws to Shortstop, who throws back to 1st base.',
     steps: [
+      { type: 'fielder_move_role', role: 'ss', targetBase: '2b', duration: 250 },
       { type: 'status', text: '1B FIELDS AND THROWS TO SS!' },
       { type: 'ball_throw', targetBase: '2b', duration: 300 },
       { type: 'catch_sound' },
